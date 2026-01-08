@@ -27,6 +27,7 @@ import {
   SimpleGrid,
   Title,
   ThemeIcon,
+  HoverCard,
 } from "@mantine/core";
 import { useDisclosure, useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -278,6 +279,58 @@ export default function App() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [editingCell, setEditingCell] = useState(null); // { rowPk, column }
+  const [fkMap, setFkMap] = useState({});
+
+  useEffect(() => {
+    const resolveFks = async () => {
+      if (!rows.length || !columns.length) return;
+
+      const fkCols = columns.filter((c) => c.fk);
+      if (fkCols.length === 0) return;
+
+      const newMap = { ...fkMap };
+      let hasChanges = false;
+
+      for (const col of fkCols) {
+        const idsToResolve = new Set();
+        rows.forEach((row) => {
+          const val = row[col.name];
+          if (val != null && !newMap[`${col.fk.table}:${val}`]) {
+            idsToResolve.add(val);
+          }
+        });
+
+        if (idsToResolve.size > 0) {
+          try {
+            const res = await fetch(`${API}/resolve-fk`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                table: col.fk.table,
+                idColumn: col.fk.column,
+                ids: Array.from(idsToResolve),
+              }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              Object.entries(data.values).forEach(([id, label]) => {
+                newMap[`${col.fk.table}:${id}`] = label;
+              });
+              hasChanges = true;
+            }
+          } catch (e) {
+            console.error("Failed to resolve FKs", e);
+          }
+        }
+      }
+
+      if (hasChanges) {
+        setFkMap(newMap);
+      }
+    };
+
+    resolveFks();
+  }, [rows, columns]);
 
   // Persisted state
   const [favorites, setFavorites] = useLocalStorage({
@@ -314,6 +367,17 @@ export default function App() {
   const [filters, setFilters] = useState([]);
   const [exportFormat, setExportFormat] = useState("csv");
 
+  // Reset SQL Runner state (preserves queryHistory)
+  const resetSqlRunnerState = () => {
+    setSqlQuery("");
+    setAiPrompt("");
+    setRows([]);
+    setColumns([]);
+    if (historyOpened) {
+      toggleHistory();
+    }
+  };
+
   // Command palette items
   const commandActions = [
     {
@@ -328,6 +392,7 @@ export default function App() {
       label: "Run SQL",
       icon: IconTerminal2,
       action: () => {
+        resetSqlRunnerState();
         setSqlMode(true);
         closeCommand();
       },
@@ -415,17 +480,6 @@ export default function App() {
     loadTables();
   }, []);
 
-  // Reset SQL Runner state (preserves queryHistory)
-  const resetSqlRunnerState = () => {
-    setSqlQuery("");
-    setAiPrompt("");
-    setRows([]);
-    setColumns([]);
-    if (historyOpened) {
-      toggleHistory();
-    }
-  };
-
   const loadTables = async () => {
     try {
       const res = await fetch(`${API}/tables`);
@@ -480,6 +534,7 @@ export default function App() {
     }
 
     loadData(name);
+    setFkMap({});
   };
 
   const loadData = async (tableName = currentTable) => {
@@ -860,6 +915,110 @@ export default function App() {
   // Render table
   const pk = columns.find((c) => c.pk === 1)?.name || columns[0]?.name;
 
+  // FK Preview Component
+  const FKPreview = ({ table, id, label }) => {
+    const [record, setRecord] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [fetched, setFetched] = useState(false);
+
+    const loadRecord = async () => {
+      if (fetched) return;
+      setLoading(true);
+      try {
+        const res = await fetch(`${API}/query`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sql: `SELECT * FROM ${table} WHERE rowid = ${id} LIMIT 1`,
+          }),
+        });
+        const data = await res.json();
+        if (data.success && data.rows && data.rows.length > 0) {
+          setRecord(data.rows[0]);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
+      setFetched(true);
+    };
+
+    return (
+      <HoverCard width={280} shadow="md" openDelay={300} onOpen={loadRecord}>
+        <HoverCard.Target>
+          <Group gap={6} wrap="nowrap" style={{ cursor: "pointer" }}>
+            <Badge
+              variant="outline"
+              color="gray"
+              size="sm"
+              leftSection={<IconLink size={10} />}
+              styles={{ label: { fontWeight: 500 } }}
+            >
+              {id}
+            </Badge>
+            {label && (
+              <Text size="xs" c="dimmed" lineClamp={1}>
+                {label}
+              </Text>
+            )}
+          </Group>
+        </HoverCard.Target>
+        <HoverCard.Dropdown>
+          {loading ? (
+            <Center p="sm">
+              <Loader size="xs" type="dots" />
+            </Center>
+          ) : record ? (
+            <Stack gap="xs">
+              <Group justify="space-between">
+                <Text size="xs" fw={700} c="dimmed" tt="uppercase">
+                  {table}
+                </Text>
+                <Badge size="xs" variant="light">
+                  ID: {id}
+                </Badge>
+              </Group>
+              <Text size="sm" fw={600} lineClamp={2}>
+                {label || "Record"}
+              </Text>
+              <Divider />
+              <Stack gap={4}>
+                {Object.entries(record)
+                  .filter(
+                    ([k]) => k !== "id" && !k.toLowerCase().includes("id")
+                  )
+                  .slice(0, 3)
+                  .map(([k, v]) => (
+                    <Group
+                      key={k}
+                      justify="space-between"
+                      align="flex-start"
+                      wrap="nowrap"
+                    >
+                      <Text size="xs" c="dimmed" style={{ minWidth: 60 }}>
+                        {k}:
+                      </Text>
+                      <Text
+                        size="xs"
+                        lineClamp={1}
+                        style={{ textAlign: "right" }}
+                      >
+                        {String(v)}
+                      </Text>
+                    </Group>
+                  ))}
+              </Stack>
+            </Stack>
+          ) : (
+            <Text size="xs" c="dimmed">
+              No preview available
+            </Text>
+          )}
+        </HoverCard.Dropdown>
+      </HoverCard>
+    );
+  };
+
   // Editable Cell Component with FK support
   const EditableCell = ({ row, col }) => {
     const value = row[col.name];
@@ -919,6 +1078,11 @@ export default function App() {
                 height: "28px",
               },
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setEditingCell(null);
+              }
+            }}
           />
         );
       }
@@ -965,15 +1129,18 @@ export default function App() {
     // FK column - show as link-style
     if (hasFK) {
       return (
-        <Badge
-          color="gray"
-          variant="light"
-          onClick={() => setEditingCell({ rowPk, column: col.name })}
-          style={{ cursor: "pointer" }}
-          leftSection={<IconKey size={10} />}
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingCell({ rowPk, column: col.name });
+          }}
         >
-          {value}
-        </Badge>
+          <FKPreview
+            table={col.fk.table}
+            id={value}
+            label={fkMap[`${col.fk.table}:${value}`]}
+          />
+        </div>
       );
     }
 
@@ -1143,6 +1310,7 @@ export default function App() {
                 resetSqlRunnerState();
               } else {
                 // Entering SQL Runner
+                resetSqlRunnerState();
                 setSqlMode(true);
                 setCurrentTable(null);
               }
@@ -1461,8 +1629,39 @@ export default function App() {
                                 key={col.name}
                                 style={{ borderBottom: "1px solid #f5f5f5" }}
                               >
-                                <Text size="sm" lineClamp={2}>
-                                  {row[col.name] != null ? (
+                                <Text
+                                  size="sm"
+                                  lineClamp={2}
+                                  title={String(row[col.name])}
+                                >
+                                  {col.fk ? (
+                                    <Group gap={6} wrap="nowrap">
+                                      <Badge
+                                        variant="outline"
+                                        color="gray"
+                                        size="sm"
+                                        leftSection={<IconLink size={10} />}
+                                        styles={{ label: { fontWeight: 500 } }}
+                                      >
+                                        {String(row[col.name])}
+                                      </Badge>
+                                      {fkMap[
+                                        `${col.fk.table}:${row[col.name]}`
+                                      ] && (
+                                        <Text
+                                          size="xs"
+                                          c="dimmed"
+                                          lineClamp={1}
+                                        >
+                                          {
+                                            fkMap[
+                                              `${col.fk.table}:${row[col.name]}`
+                                            ]
+                                          }
+                                        </Text>
+                                      )}
+                                    </Group>
+                                  ) : row[col.name] != null ? (
                                     String(row[col.name])
                                   ) : (
                                     <Text span c="dimmed" fs="italic">

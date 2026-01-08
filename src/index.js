@@ -187,6 +187,46 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin" }) => {
         }
       })
 
+      // Resolve specific FK IDs to display values
+      .post("/api/resolve-fk", ({ body }) => {
+        try {
+          const { table, idColumn, ids } = body;
+          if (
+            !table ||
+            !idColumn ||
+            !ids ||
+            !Array.isArray(ids) ||
+            ids.length === 0
+          ) {
+            return { success: true, values: {} };
+          }
+
+          // Identify display column
+          const tableInfo = db.query(`PRAGMA table_info(${table})`).all();
+          const displayCol =
+            tableInfo.find(
+              (c) =>
+                c.type?.toUpperCase().includes("TEXT") && c.name !== idColumn
+            )?.name || idColumn;
+
+          const placeholders = ids.map(() => "?").join(",");
+          // Handle potential duplicates in ids by using DISTINCT if needed, but Map handles it safely
+          const sql = `SELECT ${idColumn} as id, ${displayCol} as label FROM ${table} WHERE ${idColumn} IN (${placeholders})`;
+
+          const results = db.query(sql).all(...ids);
+
+          // Convert to map: { [id]: label }
+          const values = results.reduce((acc, row) => {
+            acc[row.id] = row.label;
+            return acc;
+          }, {});
+
+          return { success: true, values };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      })
+
       // AI SQL Generation
       .post("/api/ai/sql", async ({ body }) => {
         try {
