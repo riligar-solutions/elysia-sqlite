@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run demo/index.js",
+    "dev:ui": "cd src/ui && bun run dev",
     "build:ui": "cd src/ui && bun run build"
   },
   "dependencies": {
