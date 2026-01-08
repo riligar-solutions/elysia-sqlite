@@ -133,11 +133,55 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin" }) => {
         }
       })
 
-      // Retorna estrutura de uma tabela (rota genérica - DEVE vir por último)
+      // Retorna estrutura de uma tabela com foreign keys
       .get("/api/table/:name", ({ params }) => {
         try {
           const info = db.query(`PRAGMA table_info(${params.name})`).all();
-          return { success: true, columns: info };
+          const foreignKeys = db
+            .query(`PRAGMA foreign_key_list(${params.name})`)
+            .all();
+
+          // Enrich columns with FK info
+          const columnsWithFK = info.map((col) => {
+            const fk = foreignKeys.find((f) => f.from === col.name);
+            if (fk) {
+              return {
+                ...col,
+                fk: {
+                  table: fk.table,
+                  column: fk.to,
+                },
+              };
+            }
+            return col;
+          });
+
+          return { success: true, columns: columnsWithFK };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      })
+
+      // Retorna opções para foreign key (valores da tabela referenciada)
+      .get("/api/table/:name/fk-options", ({ params, query }) => {
+        try {
+          const { refTable, refColumn } = query;
+          if (!refTable || !refColumn) {
+            return { success: false, error: "Missing refTable or refColumn" };
+          }
+
+          // Try to get a display column (first text column or the pk itself)
+          const tableInfo = db.query(`PRAGMA table_info(${refTable})`).all();
+          const displayCol =
+            tableInfo.find(
+              (c) =>
+                c.type?.toUpperCase().includes("TEXT") && c.name !== refColumn
+            )?.name || refColumn;
+
+          const sql = `SELECT ${refColumn} as value, ${displayCol} as label FROM ${refTable} ORDER BY ${displayCol}`;
+          const options = db.query(sql).all();
+
+          return { success: true, options };
         } catch (error) {
           return { success: false, error: error.message };
         }

@@ -512,15 +512,70 @@ export default function App() {
   // Render table
   const pk = columns.find((c) => c.pk === 1)?.name || columns[0]?.name;
 
-  // Editable Cell Component
+  // Editable Cell Component with FK support
   const EditableCell = ({ row, col }) => {
     const value = row[col.name];
     const rowPk = row[pk];
     const isEditing =
       editingCell?.rowPk === rowPk && editingCell?.column === col.name;
     const isPK = col.pk === 1;
+    const hasFK = !!col.fk;
+
+    // State for FK options
+    const [fkOptions, setFkOptions] = useState([]);
+    const [fkLoading, setFkLoading] = useState(false);
+
+    // Load FK options when editing starts
+    useEffect(() => {
+      if (isEditing && hasFK) {
+        setFkLoading(true);
+        fetch(
+          `${API}/table/${currentTable}/fk-options?refTable=${col.fk.table}&refColumn=${col.fk.column}`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              setFkOptions(
+                data.options.map((o) => ({
+                  value: String(o.value),
+                  label: `${o.label} (ID: ${o.value})`,
+                }))
+              );
+            }
+            setFkLoading(false);
+          })
+          .catch(() => setFkLoading(false));
+      }
+    }, [isEditing, hasFK]);
 
     if (isEditing) {
+      // Foreign key - show Select
+      if (hasFK) {
+        return (
+          <Select
+            size="xs"
+            autoFocus
+            searchable
+            data={fkOptions}
+            defaultValue={value === null ? null : String(value)}
+            placeholder={
+              fkLoading ? "Carregando..." : `Selecione ${col.fk.table}`
+            }
+            onChange={(newVal) => {
+              updateCell(rowPk, col.name, newVal);
+            }}
+            onBlur={() => setEditingCell(null)}
+            styles={{
+              input: {
+                minHeight: "28px",
+                height: "28px",
+              },
+            }}
+          />
+        );
+      }
+
+      // Regular text input
       return (
         <TextInput
           size="xs"
@@ -556,6 +611,21 @@ export default function App() {
         >
           null
         </Text>
+      );
+    }
+
+    // FK column - show as link-style
+    if (hasFK) {
+      return (
+        <Badge
+          color="blue"
+          variant="light"
+          onClick={() => setEditingCell({ rowPk, column: col.name })}
+          style={{ cursor: "pointer" }}
+          leftSection={<IconKey size={10} />}
+        >
+          {value}
+        </Badge>
       );
     }
 

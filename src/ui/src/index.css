@@ -4,25 +4,178 @@
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
+html, body, #root {
   height: 100%;
 }
 
 body {
-  font-family: "Montserrat", sans-serif;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Notion-style editable cell */
+/* Notion-style adjustments */
+
+/* Sidebar */
+.mantine-AppShell-navbar {
+  background-color: #fbfbfa !important;
+  border-right: 1px solid #e8e8e6 !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-AppShell-navbar {
+  background-color: #202020 !important;
+  border-right: 1px solid #333333 !important;
+}
+
+/* Main area */
+.mantine-AppShell-main {
+  background-color: #ffffff !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-AppShell-main {
+  background-color: #191919 !important;
+}
+
+/* Table - Notion style */
+.mantine-Table-table {
+  border-collapse: collapse;
+}
+
+.mantine-Table-th {
+  background-color: #fbfbfa !important;
+  border-bottom: 1px solid #e8e8e6 !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  color: #787774 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Table-th {
+  background-color: #202020 !important;
+  border-bottom: 1px solid #333333 !important;
+  color: #9b9a97 !important;
+}
+
+.mantine-Table-tr {
+  border-bottom: 1px solid #e8e8e6;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Table-tr {
+  border-bottom: 1px solid #333333;
+}
+
+.mantine-Table-td {
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  color: #37352f;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Table-td {
+  color: #e8e8e6;
+}
+
+/* Editable cell hover */
 .editable-cell {
   transition: background-color 0.1s;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 3px;
 }
 
 .editable-cell:hover {
-  background-color: var(--mantine-color-gray-1);
+  background-color: #f1f1f0;
 }
 
 [data-mantine-color-scheme="dark"] .editable-cell:hover {
-  background-color: var(--mantine-color-dark-5);
+  background-color: #303030;
+}
+
+/* NavLink - Notion style */
+.mantine-NavLink-root {
+  font-size: 14px;
+  color: #787774;
+}
+
+.mantine-NavLink-root:hover {
+  background-color: #f1f1f0;
+  color: #37352f;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-NavLink-root:hover {
+  background-color: #252525;
+  color: #e8e8e6;
+}
+
+.mantine-NavLink-root[data-active] {
+  background-color: #e8e8e6;
+  color: #37352f;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-NavLink-root[data-active] {
+  background-color: #303030;
+  color: #e8e8e6;
+}
+
+/* Buttons - subtle like Notion */
+.mantine-Button-root {
+  font-weight: 500;
+}
+
+/* Badge - Notion tag style */
+.mantine-Badge-root {
+  font-weight: 500;
+  text-transform: none;
+}
+
+/* Divider labels */
+.mantine-Divider-label {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #787774 !important;
+}
+
+/* Input - Notion style */
+.mantine-TextInput-input,
+.mantine-Select-input,
+.mantine-Textarea-input {
+  border-color: #e8e8e6;
+}
+
+.mantine-TextInput-input:focus,
+.mantine-Select-input:focus,
+.mantine-Textarea-input:focus {
+  border-color: #2eaadc;
+}
+
+/* Modal */
+.mantine-Modal-content {
+  border-radius: 8px;
+}
+
+/* Scrollbar - subtle */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d3d3d0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9b9a97;
+}
+
+[data-mantine-color-scheme="dark"] ::-webkit-scrollbar-thumb {
+  background: #454543;
+}
+
+[data-mantine-color-scheme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #5a5955;
 }
