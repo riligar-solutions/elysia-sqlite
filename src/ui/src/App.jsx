@@ -65,6 +65,7 @@ import {
   IconDeviceLaptop,
   IconLogout,
   IconSelector,
+  IconFileText,
 } from "@tabler/icons-react";
 
 const API = "/admin/api";
@@ -805,7 +806,7 @@ export default function App() {
           <Group gap={4}>
             <IconDatabase stroke={2.5} size={24} />
             <Text fw={700} size="md">
-              SQLite
+              SQLite Admin
             </Text>
           </Group>
         </Group>
@@ -876,7 +877,7 @@ export default function App() {
                 <NavLink
                   key={name}
                   label={name}
-                  leftSection={<IconStarFilled size={16} />}
+                  leftSection={<IconTable size={16} />}
                   active={currentTable === name}
                   onClick={() => selectTable(name)}
                   style={{ borderRadius: 6 }}
@@ -1037,170 +1038,201 @@ export default function App() {
             {/* History & Results would go here - simplified for this view */}
           </Box>
         ) : !currentTable ? (
-          // DASHBOARD / OVERVIEW
-          <Box p="xl" style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <Title order={2} mb="xl">
-              Overview
-            </Title>
+          // DASHBOARD / OVERVIEW (NOTION STYLE)
+          <Box p="xl" style={{ maxWidth: 960, margin: "0 auto" }}>
+            {/* 1. Header Area */}
+            <Group align="flex-start" gap="md" mb={48} mt="xl">
+              <ThemeIcon size={72} variant="transparent" c="dark">
+                <IconDatabase size={72} stroke={1.3} />
+              </ThemeIcon>
+              <Stack gap={0} mt={4}>
+                <Title order={1} fw={700} fz={40}>
+                  SQLite Admin
+                </Title>
+                <Text c="dimmed" size="lg">
+                  Manage your local database schema and data.
+                </Text>
+              </Stack>
+            </Group>
 
-            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md" mb="xl">
-              {/* Stats - Big Numbers */}
-              <Paper withBorder p="md" radius="md">
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                  Total Tables
-                </Text>
-                <Text fz={32} fw={600} mt={4}>
-                  {tables.length}
-                </Text>
-              </Paper>
-              <Paper withBorder p="md" radius="md">
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                  Favorites
-                </Text>
-                <Text fz={32} fw={600} mt={4}>
-                  {favorites.length}
-                </Text>
-              </Paper>
-              <Paper withBorder p="md" radius="md">
-                <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                  System
-                </Text>
-                <Group gap={6} mt={12}>
-                  <Badge variant="dot" color="green">
-                    Online
-                  </Badge>
-                  <Text size="sm" c="dimmed">
-                    SQLite
-                  </Text>
-                </Group>
-              </Paper>
-            </SimpleGrid>
+            {/* 2. Gallery Section (Tools) */}
+            <Box mb={48}>
+              <Title order={3} fw={600} mb="xl" fz={18}>
+                Quick Access
+              </Title>
 
-            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
-              {/* Recent Activity */}
-              <Stack>
-                <Text fw={600} size="sm" c="dimmed" tt="uppercase">
+              <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xl">
+                {/* Card: SQL Runner */}
+                <Paper
+                  withBorder
+                  p="lg"
+                  radius="md"
+                  onClick={() => setSqlMode(true)}
+                  style={{
+                    cursor: "pointer",
+                    transition: "box-shadow 0.2s",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                  className="editable-cell"
+                  h={140}
+                  display="flex"
+                >
+                  <Group justify="space-between" align="flex-start">
+                    <ThemeIcon variant="light" color="gray" size="lg">
+                      <IconTerminal2 size={20} />
+                    </ThemeIcon>
+                  </Group>
+                  <Box>
+                    <Text fw={600} size="md">
+                      SQL Runner
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Run queries & AI
+                    </Text>
+                  </Box>
+                </Paper>
+
+                {/* Card: Search */}
+                <Paper
+                  withBorder
+                  p="lg"
+                  radius="md"
+                  style={{
+                    cursor: "pointer",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                  className="editable-cell"
+                  h={140}
+                  display="flex"
+                  onClick={() => openCommand()}
+                >
+                  <Group justify="space-between" align="flex-start">
+                    <ThemeIcon variant="light" color="gray" size="lg">
+                      <IconSearch size={20} />
+                    </ThemeIcon>
+                  </Group>
+                  <Box>
+                    <Text fw={600} size="md">
+                      Global Search
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Find anything
+                    </Text>
+                  </Box>
+                </Paper>
+
+                {/* Card: Schema */}
+                <Paper
+                  withBorder
+                  p="lg"
+                  radius="md"
+                  style={{
+                    cursor: "pointer",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                  className="editable-cell"
+                  h={140}
+                  display="flex"
+                  onClick={() => loadErd()}
+                >
+                  <Group justify="space-between" align="flex-start">
+                    <ThemeIcon variant="light" color="gray" size="lg">
+                      <IconSitemap size={20} />
+                    </ThemeIcon>
+                  </Group>
+                  <Box>
+                    <Text fw={600} size="md">
+                      ER Diagram
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Visual Schema
+                    </Text>
+                  </Box>
+                </Paper>
+              </SimpleGrid>
+            </Box>
+
+            {/* 3. Table Section (Recents) */}
+            <Box>
+              <Group mb="md" gap="xs">
+                <IconTable size={18} />
+                <Title order={3} fw={600} fz={18}>
                   Recent Activity
+                </Title>
+                <Divider orientation="vertical" />
+                <Text size="sm" c="dimmed" style={{ cursor: "pointer" }}>
+                  Board
                 </Text>
-                <Paper withBorder radius="md" overflow="hidden">
-                  <Stack gap={0}>
+              </Group>
+
+              <Paper withBorder radius="sm" overflow="hidden">
+                <Table verticalSpacing="xs" striped={false} highlightOnHover>
+                  <Table.Thead bg="gray.0">
+                    <Table.Tr>
+                      <Table.Th style={{ width: "40%" }}>
+                        <Group gap={4}>
+                          <Text size="xs" c="dimmed">
+                            Aa
+                          </Text>
+                          Table Name
+                        </Group>
+                      </Table.Th>
+                      <Table.Th>Type</Table.Th>
+                      <Table.Th>Action</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
                     {recentTables.length === 0 ? (
-                      <Box p="lg" ta="center" c="dimmed">
-                        <IconHistory size={24} style={{ opacity: 0.5 }} />
-                        <Text size="sm" mt="xs">
-                          No tables viewed yet.
-                        </Text>
-                      </Box>
+                      <Table.Tr>
+                        <Table.Td colSpan={3}>
+                          <Text size="sm" c="dimmed" fs="italic" py="xs">
+                            No recent pages visited.
+                          </Text>
+                        </Table.Td>
+                      </Table.Tr>
                     ) : (
                       recentTables.map((name) => (
-                        <Group
+                        <Table.Tr
                           key={name}
-                          justify="space-between"
-                          p="md"
-                          style={{
-                            borderBottom:
-                              "1px solid var(--mantine-color-gray-2)",
-                            cursor: "pointer",
-                            transition: "background 0.1s",
-                          }}
                           onClick={() => selectTable(name)}
-                          className="editable-cell" // Reuse hover effect
+                          style={{ cursor: "pointer" }}
                         >
-                          <Group gap="sm">
-                            {getTableIcon(name)}
-                            <Text fw={500}>{name}</Text>
-                          </Group>
-                          <IconChevronRight size={14} color="gray" />
-                        </Group>
+                          <Table.Td>
+                            <Group gap="sm">
+                              <IconTable size={16} />
+                              <Text
+                                size="sm"
+                                fw={500}
+                                style={{ borderBottom: "1px solid #e5e7eb" }}
+                              >
+                                {name}
+                              </Text>
+                            </Group>
+                          </Table.Td>
+                          <Table.Td>
+                            <Badge size="xs" color="gray" variant="light">
+                              Table
+                            </Badge>
+                          </Table.Td>
+                          <Table.Td>
+                            <Button
+                              size="compact-xs"
+                              variant="subtle"
+                              color="gray"
+                            >
+                              Open
+                            </Button>
+                          </Table.Td>
+                        </Table.Tr>
                       ))
                     )}
-                  </Stack>
-                </Paper>
-              </Stack>
-
-              {/* Quick Actions */}
-              <Stack>
-                <Text fw={600} size="sm" c="dimmed" tt="uppercase">
-                  Tools
-                </Text>
-                <SimpleGrid cols={1} spacing="sm">
-                  <Paper
-                    withBorder
-                    p="md"
-                    radius="md"
-                    onClick={() => setSqlMode(true)}
-                    style={{ cursor: "pointer" }}
-                    className="editable-cell"
-                  >
-                    <Group justify="space-between" mb="xs">
-                      <ThemeIcon
-                        size="lg"
-                        variant="light"
-                        color="gray"
-                        radius="md"
-                      >
-                        <IconTerminal2 size={20} />
-                      </ThemeIcon>
-                      <IconChevronRight size={14} color="gray" />
-                    </Group>
-                    <Text fw={600}>SQL Runner</Text>
-                    <Text size="xs" c="dimmed" mt={4}>
-                      Execute raw queries and ask AI.
-                    </Text>
-                  </Paper>
-
-                  <Paper
-                    withBorder
-                    p="md"
-                    radius="md"
-                    onClick={() => openCommand()}
-                    style={{ cursor: "pointer" }}
-                    className="editable-cell"
-                  >
-                    <Group justify="space-between" mb="xs">
-                      <ThemeIcon
-                        size="lg"
-                        variant="light"
-                        color="gray"
-                        radius="md"
-                      >
-                        <IconSearch size={20} />
-                      </ThemeIcon>
-                      <IconChevronRight size={14} color="gray" />
-                    </Group>
-                    <Text fw={600}>Global Search</Text>
-                    <Text size="xs" c="dimmed" mt={4}>
-                      Find tables, commands, and records.
-                    </Text>
-                  </Paper>
-
-                  <Paper
-                    withBorder
-                    p="md"
-                    radius="md"
-                    onClick={() => loadErd()}
-                    style={{ cursor: "pointer" }}
-                    className="editable-cell"
-                  >
-                    <Group justify="space-between" mb="xs">
-                      <ThemeIcon
-                        size="lg"
-                        variant="light"
-                        color="gray"
-                        radius="md"
-                      >
-                        <IconSitemap size={20} />
-                      </ThemeIcon>
-                      <IconChevronRight size={14} color="gray" />
-                    </Group>
-                    <Text fw={600}>Schema View</Text>
-                    <Text size="xs" c="dimmed" mt={4}>
-                      Visual Entity-Relationship Diagram.
-                    </Text>
-                  </Paper>
-                </SimpleGrid>
-              </Stack>
-            </SimpleGrid>
+                  </Table.Tbody>
+                </Table>
+              </Paper>
+            </Box>
           </Box>
         ) : (
           // TABLE VIEW
@@ -1212,7 +1244,7 @@ export default function App() {
               style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}
             >
               <Group align="center" gap="md" mb="xs">
-                {getTableIcon(currentTable)}
+                <IconTable size={32} stroke={1.5} />
                 <Title order={1} style={{ fontSize: 32, fontWeight: 700 }}>
                   {currentTable}
                 </Title>
