@@ -70,6 +70,7 @@ import {
 
 import { useFilter } from "./hooks/useFilter";
 import { Filter } from "./components/Filter";
+import { ExportButton } from "./components/ExportButton";
 
 const API = "/admin/api";
 
@@ -104,6 +105,154 @@ const isTagColumn = (name) => {
     n.includes("categoria") ||
     n.includes("category") ||
     n === "cor"
+  );
+};
+
+// New Record Modal Component with FK Support
+const NewRecordModal = ({
+  opened,
+  onClose,
+  columns,
+  currentTable,
+  onSuccess,
+}) => {
+  const [formData, setFormData] = useState({});
+  const [fkOptionsMap, setFkOptionsMap] = useState({});
+  const [loadingFk, setLoadingFk] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (opened) {
+      setFormData({});
+      // Load FK options for all FK columns
+      const fkColumns = columns.filter((c) => c.pk !== 1 && c.fk);
+      fkColumns.forEach((col) => {
+        loadFkOptions(col);
+      });
+    }
+  }, [opened, columns]);
+
+  const loadFkOptions = async (col) => {
+    if (!col.fk) return;
+
+    setLoadingFk((prev) => ({ ...prev, [col.name]: true }));
+
+    try {
+      const res = await fetch(
+        `${API}/table/${currentTable}/fk-options?refTable=${col.fk.table}&refColumn=${col.fk.column}`
+      );
+      const data = await res.json();
+
+      if (data.success) {
+        setFkOptionsMap((prev) => ({
+          ...prev,
+          [col.name]: data.options.map((o) => ({
+            value: String(o.value),
+            label: `${o.label} (ID: ${o.value})`,
+          })),
+        }));
+      }
+    } catch (err) {
+      console.error("Error loading FK options:", err);
+    }
+
+    setLoadingFk((prev) => ({ ...prev, [col.name]: false }));
+  };
+
+  const handleFieldChange = (colName, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [colName]: value,
+    }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+
+    try {
+      const res = await fetch(`${API}/table/${currentTable}/insert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        notifications.show({
+          title: "Success",
+          message: "Record created!",
+          color: "green",
+        });
+        onSuccess();
+      } else {
+        notifications.show({
+          title: "Error",
+          message: result.error,
+          color: "red",
+        });
+      }
+    } catch (err) {
+      notifications.show({
+        title: "Error",
+        message: "Failed to save",
+        color: "red",
+      });
+    }
+
+    setSaving(false);
+  };
+
+  const renderField = (col) => {
+    const hasFK = !!col.fk;
+    const isRequired = col.notnull === 1;
+    const label = `${col.name}${isRequired ? " *" : ""}`;
+
+    if (hasFK) {
+      const options = fkOptionsMap[col.name] || [];
+      const isLoading = loadingFk[col.name];
+
+      return (
+        <Select
+          key={col.name}
+          label={label}
+          placeholder={isLoading ? "Loading..." : `Select ${col.fk.table}`}
+          data={options}
+          value={formData[col.name] || null}
+          onChange={(value) => handleFieldChange(col.name, value)}
+          searchable
+          clearable
+          disabled={isLoading}
+          leftSection={<IconKey size={14} />}
+        />
+      );
+    }
+
+    return (
+      <TextInput
+        key={col.name}
+        label={label}
+        placeholder={col.type || "TEXT"}
+        value={formData[col.name] || ""}
+        onChange={(e) => handleFieldChange(col.name, e.target.value)}
+      />
+    );
+  };
+
+  return (
+    <Modal opened={opened} onClose={onClose} title="New Record">
+      <Stack>
+        {columns.filter((c) => c.pk !== 1).map((col) => renderField(col))}
+        <Group justify="flex-end">
+          <Button variant="subtle" onClick={onClose} color="gray">
+            Cancel
+          </Button>
+          <Button color="dark" onClick={handleSave} loading={saving}>
+            Save
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
   );
 };
 
@@ -250,13 +399,31 @@ export default function App() {
         openCommand();
       },
     ],
-    ["escape", () => closeCommand()],
+    [
+      "escape",
+      () => {
+        closeCommand();
+        setCommandQuery("");
+        setCommandIndex(0);
+      },
+    ],
   ]);
 
   // Load tables
   useEffect(() => {
     loadTables();
   }, []);
+
+  // Reset SQL Runner state (preserves queryHistory)
+  const resetSqlRunnerState = () => {
+    setSqlQuery("");
+    setAiPrompt("");
+    setRows([]);
+    setColumns([]);
+    if (historyOpened) {
+      toggleHistory();
+    }
+  };
 
   const loadTables = async () => {
     try {
@@ -292,8 +459,10 @@ export default function App() {
     setSort(null);
     setSelectedRows(new Set());
     setSearchQuery("");
+    setSearchQuery("");
     setSqlMode(false);
     setFilters([]);
+    resetSqlRunnerState();
 
     // Add to recents
     setRecentTables((prev) => {
@@ -951,6 +1120,7 @@ export default function App() {
             onClick={() => {
               setCurrentTable(null);
               setSqlMode(false);
+              resetSqlRunnerState();
             }}
             style={{ borderRadius: 6 }}
             active={!currentTable && !sqlMode}
@@ -966,8 +1136,15 @@ export default function App() {
             leftSection={<IconTerminal2 size={16} />}
             active={sqlMode}
             onClick={() => {
-              setSqlMode(!sqlMode);
-              if (!sqlMode) setCurrentTable(null);
+              if (sqlMode) {
+                // Exiting SQL Runner - reset state
+                setSqlMode(false);
+                resetSqlRunnerState();
+              } else {
+                // Entering SQL Runner
+                setSqlMode(true);
+                setCurrentTable(null);
+              }
             }}
             style={{ borderRadius: 6 }}
           />
@@ -1136,7 +1313,7 @@ export default function App() {
               p="md"
               withBorder
               radius="md"
-              mb="xl"
+              mb="lg"
               bg={dark ? "dark.6" : "gray.0"}
               style={{
                 borderColor: dark
@@ -1148,7 +1325,6 @@ export default function App() {
                 <IconSparkles size={20} style={{ opacity: 0.6 }} />
                 <TextInput
                   placeholder="Ask AI to write SQL..."
-                  // variant="unstyled"
                   style={{ flex: 1 }}
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
@@ -1156,6 +1332,9 @@ export default function App() {
                 />
                 {aiLoading && <Loader size="xs" color="gray" />}
               </Group>
+              <Text size="xs" c="dimmed" align="right" mt="xs">
+                Press ENTER to generate your query
+              </Text>
             </Paper>
 
             <Textarea
@@ -1179,7 +1358,7 @@ export default function App() {
 
             {/* History */}
             {historyOpened && (
-              <Paper withBorder p="md" mb="md" radius="md">
+              <Paper withBorder p="md" radius="md" mt="xl">
                 <Text fw={600} mb="sm">
                   Query History
                 </Text>
@@ -1190,18 +1369,35 @@ export default function App() {
                     </Text>
                   ) : (
                     queryHistory.slice(0, 10).map((h, i) => (
-                      <Group key={i} justify="space-between">
+                      <Group key={i} justify="space-between" wrap="nowrap">
                         <Text
                           size="sm"
-                          style={{ fontFamily: "monospace", cursor: "pointer" }}
+                          style={{
+                            fontFamily: "monospace",
+                            cursor: "pointer",
+                            flex: 1,
+                          }}
                           onClick={() => setSqlQuery(h.sql)}
                           lineClamp={1}
                         >
                           {h.sql}
                         </Text>
-                        <Text size="xs" c="dimmed">
-                          {new Date(h.timestamp).toLocaleTimeString()}
-                        </Text>
+                        <Group gap="xs" wrap="nowrap">
+                          <Text size="xs" c="dimmed">
+                            {new Date(h.timestamp).toLocaleTimeString()}
+                          </Text>
+                          <ActionIcon
+                            variant="subtle"
+                            color="dark"
+                            size="sm"
+                            onClick={() => {
+                              setSqlQuery(h.sql);
+                              setTimeout(() => runQuery(), 100);
+                            }}
+                          >
+                            <IconPlayerPlay size={14} />
+                          </ActionIcon>
+                        </Group>
                       </Group>
                     ))
                   )}
@@ -1218,8 +1414,9 @@ export default function App() {
               rows.length > 0 &&
               sqlMode && (
                 <Paper withBorder radius="md" mt="xl">
-                  <Box
+                  <Group
                     p="sm"
+                    justify="space-between"
                     style={{
                       borderBottom: "1px solid var(--mantine-color-gray-3)",
                     }}
@@ -1227,7 +1424,14 @@ export default function App() {
                     <Text size="sm" c="dimmed">
                       {rows.length} result(s)
                     </Text>
-                  </Box>
+                    <ExportButton
+                      data={rows}
+                      columns={columns}
+                      filename="query_results"
+                      variant="subtle"
+                      compact
+                    />
+                  </Group>
                   <ScrollArea>
                     <Table
                       striped={false}
@@ -1531,21 +1735,25 @@ export default function App() {
                 >
                   Structure
                 </Button>
-                <Button
-                  size="xs"
+                <ExportButton
+                  data={
+                    selectedRows.size > 0
+                      ? rows.filter((r) =>
+                          selectedRows.has(
+                            String(
+                              r[
+                                columns.find((c) => c.pk === 1)?.name ||
+                                  columns[0]?.name
+                              ]
+                            )
+                          )
+                        )
+                      : rows
+                  }
+                  columns={columns}
+                  filename={currentTable}
                   variant="default"
-                  radius="md"
-                  leftSection={<IconDownload size={14} />}
-                  onClick={openExport}
-                  styles={{
-                    root: {
-                      fontWeight: 500,
-                      letterSpacing: "-0.01em",
-                    },
-                  }}
-                >
-                  Export
-                </Button>
+                />
               </Group>
 
               <Button
@@ -1601,16 +1809,21 @@ export default function App() {
                       >
                         Delete
                       </Button>
-                      <Button
-                        size="xs"
-                        variant="white"
-                        onClick={openExport}
-                        bg="transparent"
-                        c="white"
-                        style={{ border: "1px solid white" }}
-                      >
-                        Export
-                      </Button>
+                      <ExportButton
+                        data={rows.filter((r) =>
+                          selectedRows.has(
+                            String(
+                              r[
+                                columns.find((c) => c.pk === 1)?.name ||
+                                  columns[0]?.name
+                              ]
+                            )
+                          )
+                        )}
+                        columns={columns}
+                        filename={`${currentTable}_selected`}
+                        variant="default"
+                      />
                       <Button
                         size="xs"
                         variant="subtle"
@@ -1737,77 +1950,17 @@ export default function App() {
       </AppShell.Main>
 
       {/* New Record Modal */}
-      <Modal
+      <NewRecordModal
         opened={newRecordOpened}
         onClose={closeNewRecord}
-        title="New Record"
-      >
-        <Stack>
-          {columns
-            .filter((c) => c.pk !== 1)
-            .map((col) => (
-              <TextInput
-                key={col.name}
-                label={`${col.name} ${col.notnull ? "*" : ""}`}
-                placeholder={col.type || "TEXT"}
-                id={`field-${col.name}`}
-              />
-            ))}
-          <Group justify="flex-end">
-            <Button variant="subtle" onClick={closeNewRecord} color="gray">
-              Cancel
-            </Button>
-            <Button
-              color="dark"
-              onClick={async () => {
-                const data = {};
-                columns
-                  .filter((c) => c.pk !== 1)
-                  .forEach((col) => {
-                    const input = document.getElementById(`field-${col.name}`);
-                    if (input?.value) data[col.name] = input.value;
-                  });
-
-                try {
-                  const res = await fetch(
-                    `${API}/table/${currentTable}/insert`,
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(data),
-                    }
-                  );
-                  const result = await res.json();
-                  if (result.success) {
-                    notifications.show({
-                      title: "Success",
-                      message: "Record created!",
-                      color: "green",
-                    });
-                    closeNewRecord();
-                    loadData();
-                    loadTables();
-                  } else {
-                    notifications.show({
-                      title: "Error",
-                      message: result.error,
-                      color: "red",
-                    });
-                  }
-                } catch (err) {
-                  notifications.show({
-                    title: "Error",
-                    message: "Failed to save",
-                    color: "red",
-                  });
-                }
-              }}
-            >
-              Save
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+        columns={columns}
+        currentTable={currentTable}
+        onSuccess={() => {
+          closeNewRecord();
+          loadData();
+          loadTables();
+        }}
+      />
 
       {/* Filter Modal */}
       <Modal opened={filterOpened} onClose={closeFilter} title="Filter">
@@ -1948,7 +2101,11 @@ export default function App() {
 
       <Modal
         opened={commandOpened}
-        onClose={closeCommand}
+        onClose={() => {
+          closeCommand();
+          setCommandQuery("");
+          setCommandIndex(0);
+        }}
         withCloseButton={false}
         size="lg"
         padding={0}
