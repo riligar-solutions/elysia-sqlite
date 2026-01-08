@@ -8,6 +8,7 @@ import {
   Text,
   Chip,
   ActionIcon,
+  Button,
 } from "@mantine/core";
 import { useClickOutside } from "@mantine/hooks";
 import { IconSearch, IconX, IconRefresh } from "@tabler/icons-react";
@@ -256,7 +257,7 @@ export function Filter({
                     ))}
                   </Group>
                   {!isLastFilter && (
-                    <ActionIcon
+                    <Button
                       size="xs"
                       variant="subtle"
                       color="gray"
@@ -267,11 +268,19 @@ export function Filter({
                         }));
                       }}
                       title="Toggle AND/OR"
+                      fw={700}
+                      px={4}
+                      h="auto"
+                      py={2}
+                      c="dimmed"
+                      styles={{
+                        label: {
+                          fontSize: "10px",
+                        },
+                      }}
                     >
-                      <Text size="xs" fw={600} c="dimmed">
-                        {logicalOperators[key] || "AND"}
-                      </Text>
-                    </ActionIcon>
+                      {logicalOperators[key] || "AND"}
+                    </Button>
                   )}
                 </Group>
               );
