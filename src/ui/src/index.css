@@ -11,154 +11,16 @@ body,
 }
 
 body {
-  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: #ffffff;
+  color: #11181c;
 }
 
-/* Notion-style adjustments */
-
-/* Sidebar */
-.mantine-AppShell-navbar {
-  background-color: #fbfbfa !important;
-  border-right: 1px solid #e8e8e6 !important;
-}
-
-[data-mantine-color-scheme="dark"] .mantine-AppShell-navbar {
-  background-color: #202020 !important;
-  border-right: 1px solid #333333 !important;
-}
-
-/* Main area */
-.mantine-AppShell-main {
-  background-color: #ffffff !important;
-}
-
-[data-mantine-color-scheme="dark"] .mantine-AppShell-main {
-  background-color: #191919 !important;
-}
-
-/* Table - Notion style */
-.mantine-Table-table {
-  border-collapse: collapse;
-}
-
-.mantine-Table-th {
-  background-color: #fbfbfa !important;
-  border-bottom: 1px solid #e8e8e6 !important;
-  font-weight: 500 !important;
-  font-size: 12px !important;
-  color: #787774 !important;
-  text-transform: none !important;
-  letter-spacing: normal !important;
-}
-
-[data-mantine-color-scheme="dark"] .mantine-Table-th {
-  background-color: #202020 !important;
-  border-bottom: 1px solid #333333 !important;
-  color: #9b9a97 !important;
-}
-
-.mantine-Table-tr {
-  border-bottom: 1px solid #e8e8e6;
-}
-
-[data-mantine-color-scheme="dark"] .mantine-Table-tr {
-  border-bottom: 1px solid #333333;
-}
-
-.mantine-Table-td {
-  font-size: 13px !important;
-  padding: 8px 12px !important;
-  color: #37352f;
-}
-
-[data-mantine-color-scheme="dark"] .mantine-Table-td {
-  color: #e8e8e6;
-}
-
-/* Editable cell hover */
-.editable-cell {
-  transition: background-color 0.1s;
-  padding: 2px 4px;
-  margin: -2px -4px;
-  border-radius: 3px;
-}
-
-.editable-cell:hover {
-  background-color: #f1f1f0;
-}
-
-[data-mantine-color-scheme="dark"] .editable-cell:hover {
-  background-color: #303030;
-}
-
-/* NavLink - Notion style */
-.mantine-NavLink-root {
-  font-size: 14px;
-  color: #787774;
-}
-
-.mantine-NavLink-root:hover {
-  background-color: #f1f1f0;
-  color: #37352f;
-}
-
-[data-mantine-color-scheme="dark"] .mantine-NavLink-root:hover {
-  background-color: #252525;
-  color: #e8e8e6;
-}
-
-.mantine-NavLink-root[data-active] {
-  background-color: #e8e8e6;
-  color: #37352f;
-}
-
-[data-mantine-color-scheme="dark"] .mantine-NavLink-root[data-active] {
-  background-color: #303030;
-  color: #e8e8e6;
-}
-
-/* Buttons - subtle like Notion */
-.mantine-Button-root {
-  font-weight: 500;
-}
-
-/* Badge - Notion tag style */
-.mantine-Badge-root {
-  font-weight: 500;
-  text-transform: none;
-}
-
-/* Divider labels */
-.mantine-Divider-label {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #787774 !important;
-}
-
-/* Input - Notion style */
-.mantine-TextInput-input,
-.mantine-Select-input,
-.mantine-Textarea-input {
-  border-color: #e8e8e6;
-}
-
-.mantine-TextInput-input:focus,
-.mantine-Select-input:focus,
-.mantine-Textarea-input:focus {
-  border-color: #2eaadc;
-}
-
-/* Modal */
-.mantine-Modal-content {
-  border-radius: 8px;
-}
-
-/* Scrollbar - subtle */
+/* Scrollbar - Minimalist */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -166,18 +28,56 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d3d3d0;
-  border-radius: 4px;
+  background: #e5e7eb;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9b9a97;
+  background: #d1d5db;
 }
 
-[data-mantine-color-scheme="dark"] ::-webkit-scrollbar-thumb {
-  background: #454543;
+/* Sidebar Overrides (if needed beyond AppShell default) */
+.mantine-AppShell-navbar {
+  background-color: #fafafa !important;
+  border-right: 1px solid #e5e7eb !important;
 }
 
-[data-mantine-color-scheme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: #5a5955;
+[data-mantine-color-scheme="dark"] .mantine-AppShell-navbar {
+  background-color: #111111 !important;
+  border-right: 1px solid #222222 !important;
+}
+
+/* Table - Clean Rows */
+.mantine-Table-table {
+  border-collapse: collapse;
+}
+
+.mantine-Table-thead {
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.mantine-Table-tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.1s ease;
+}
+
+.mantine-Table-tr:last-child {
+  border-bottom: none;
+}
+
+.mantine-Table-td {
+  padding: 8px 16px !important; /* Increased padding slightly for readability */
+}
+
+/* Editable Cell */
+.editable-cell {
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.editable-cell:hover {
+  background-color: #f3f4f6;
+  color: #000000;
 }

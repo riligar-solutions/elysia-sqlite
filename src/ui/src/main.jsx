@@ -10,50 +10,99 @@ import "./index.css";
 // Notion-inspired theme
 const theme = createTheme({
   fontFamily: "Montserrat, -apple-system, BlinkMacSystemFont, sans-serif",
-  primaryColor: "gray",
-  defaultRadius: "sm",
+  primaryColor: "dark",
+  defaultRadius: 6,
   colors: {
-    // Notion warm grays
+    // Custom monochromatic gray scale from design.md
     gray: [
-      "#fbfbfa", // 0 - sidebar bg
-      "#f1f1f0", // 1 - hover
-      "#e8e8e6", // 2 - active/border
-      "#d3d3d0", // 3
-      "#9b9a97", // 4
-      "#787774", // 5 - secondary text
-      "#5a5955", // 6
-      "#37352f", // 7 - primary text
-      "#2f2f2f", // 8
-      "#1f1f1f", // 9
+      "#F9FAFB", // 0 - app bg / sidebar (lightest)
+      "#F3F4F6", // 1 - hover
+      "#E5E7EB", // 2 - borders / lines
+      "#D1D5DB", // 3
+      "#9CA3AF", // 4
+      "#6B7280", // 5 - secondary text
+      "#4B5563", // 6
+      "#374151", // 7
+      "#1F2937", // 8
+      "#11181C", // 9 - primary text
     ],
     dark: [
-      "#e8e8e6", // 0 - text
-      "#9b9a97", // 1 - secondary
-      "#5a5955", // 2
-      "#454543", // 3
-      "#373737", // 4 - border
-      "#303030", // 5 - active
-      "#252525", // 6 - hover
-      "#202020", // 7 - sidebar
-      "#191919", // 8 - bg
-      "#111111", // 9
+      "#C1C2C5", // 0
+      "#A6A7AB", // 1
+      "#909296", // 2
+      "#5C5F66", // 3
+      "#373A40", // 4
+      "#2C2E33", // 5
+      "#25262B", // 6
+      "#1A1B1E", // 7
+      "#141517", // 8
+      "#101113", // 9
     ],
   },
   components: {
-    NavLink: {
-      styles: {
-        root: {
-          borderRadius: 4,
-          padding: "6px 10px",
-        },
+    Button: {
+      defaultProps: {
+        size: "sm", // 32px height
       },
+      styles: (theme, params) => ({
+        root: {
+          height: "32px",
+          fontWeight: 500,
+          border:
+            params.variant === "default" ? "1px solid #E5E7EB" : undefined,
+          backgroundColor: params.variant === "filled" ? "#000000" : undefined, // Primary Black
+          color: params.variant === "filled" ? "#FFFFFF" : undefined,
+          "&:hover": {
+            backgroundColor:
+              params.variant === "filled" ? "#2f2f2f" : undefined,
+          },
+        },
+      }),
     },
     Table: {
+      defaultProps: {
+        withColumnBorders: false,
+        verticalSpacing: "sm",
+      },
       styles: {
         th: {
           fontWeight: 500,
           fontSize: "12px",
-          textTransform: "none",
+          color: "#687076", // Secondary text
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        },
+        td: {
+          fontSize: "13px",
+          color: "#11181C",
+        },
+        tr: {
+          "&[data-hover]": {
+            backgroundColor: "#F9FAFB",
+          },
+        },
+      },
+    },
+    TextInput: {
+      styles: {
+        input: {
+          border: "1px solid #E5E5E5",
+          "&:focus": {
+            borderColor: "#000000",
+          },
+        },
+      },
+    },
+    Modal: {
+      styles: {
+        header: {
+          backgroundColor: "transparent",
+        },
+        content: {
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        },
+        overlay: {
+          backdropFilter: "blur(4px)",
         },
       },
     },
@@ -61,6 +110,22 @@ const theme = createTheme({
       defaultProps: {
         variant: "light",
         radius: "sm",
+      },
+    },
+    NavLink: {
+      styles: {
+        root: {
+          borderRadius: 6,
+          fontWeight: 500,
+          color: "#687076",
+          "&[data-active]": {
+            backgroundColor: "#F3F4F6",
+            color: "#11181C",
+          },
+          "&:hover": {
+            backgroundColor: "#F9FAFB",
+          },
+        },
       },
     },
   },

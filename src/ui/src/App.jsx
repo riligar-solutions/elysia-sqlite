@@ -26,6 +26,7 @@ import {
   Center,
   SimpleGrid,
   Title,
+  ThemeIcon,
 } from "@mantine/core";
 import { useDisclosure, useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -59,6 +60,11 @@ import {
   IconCheck,
   IconSparkles,
   IconSitemap,
+  IconSettings,
+  IconUser,
+  IconDeviceLaptop,
+  IconLogout,
+  IconSelector,
 } from "@tabler/icons-react";
 
 const API = "/admin/api";
@@ -78,21 +84,7 @@ const getColumnIcon = (type, name) => {
 };
 
 // Tag colors
-const tagColors = [
-  "gray",
-  "red",
-  "pink",
-  "grape",
-  "violet",
-  "indigo",
-  "blue",
-  "cyan",
-  "teal",
-  "green",
-  "lime",
-  "yellow",
-  "orange",
-];
+const tagColors = ["gray"];
 const getTagColor = (value) => {
   if (!value) return "gray";
   const hash = String(value)
@@ -140,6 +132,10 @@ export default function App() {
   });
   const [queryHistory, setQueryHistory] = useLocalStorage({
     key: "sqlite-history",
+    defaultValue: [],
+  });
+  const [recentTables, setRecentTables] = useLocalStorage({
+    key: "sqlite-recents",
     defaultValue: [],
   });
 
@@ -209,6 +205,12 @@ export default function App() {
     setSearchQuery("");
     setSqlMode(false);
     setFilters([]);
+
+    // Add to recents
+    setRecentTables((prev) => {
+      const filtered = prev.filter((t) => t !== name);
+      return [name, ...filtered].slice(0, 5);
+    });
 
     try {
       const res = await fetch(`${API}/table/${name}`);
@@ -705,7 +707,7 @@ export default function App() {
     if (hasFK) {
       return (
         <Badge
-          color="blue"
+          color="gray"
           variant="light"
           onClick={() => setEditingCell({ rowPk, column: col.name })}
           style={{ cursor: "pointer" }}
@@ -763,7 +765,7 @@ export default function App() {
   const tableRows = rows.map((row) => (
     <Table.Tr
       key={row[pk]}
-      bg={selectedRows.has(String(row[pk])) ? "blue.0" : undefined}
+      bg={selectedRows.has(String(row[pk])) ? "gray.0" : undefined}
     >
       <Table.Td>
         <Checkbox
@@ -806,23 +808,19 @@ export default function App() {
               SQLite
             </Text>
           </Group>
-          <ActionIcon
-            variant="subtle"
-            size="xs"
-            color="gray"
-            onClick={() => toggleColorScheme()}
-          >
-            {dark ? <IconSun size={14} /> : <IconMoon size={14} />}
-          </ActionIcon>
         </Group>
 
-        <Stack gap={2}>
-          <NavLink
-            label="Search"
-            leftSection={<IconSearch size={16} />}
-            onClick={() => openCommand()}
-            style={{ borderRadius: 4 }}
-          />
+        <Stack gap={4} mb="md">
+          <Text
+            size="xs"
+            fw={600}
+            c="dimmed"
+            px="xs"
+            mb={4}
+            style={{ textTransform: "uppercase", fontSize: "11px" }}
+          >
+            Platform
+          </Text>
           <NavLink
             label="Home"
             leftSection={<IconCommand size={16} />}
@@ -830,73 +828,15 @@ export default function App() {
               setCurrentTable(null);
               setSqlMode(false);
             }}
-            style={{ borderRadius: 4 }}
+            style={{ borderRadius: 6 }}
             active={!currentTable && !sqlMode}
           />
           <NavLink
-            label="ER Diagram"
-            leftSection={<IconSitemap size={16} />}
-            onClick={() => loadErd()}
-            style={{ borderRadius: 4 }}
+            label="Search"
+            leftSection={<IconSearch size={16} />}
+            onClick={() => openCommand()}
+            style={{ borderRadius: 6 }}
           />
-          <NavLink
-            label="Settings"
-            leftSection={<IconCommand size={16} />} // Placeholder icon
-            style={{ borderRadius: 4 }}
-          />
-        </Stack>
-
-        <Divider my="md" />
-
-        <ScrollArea style={{ flex: 1 }}>
-          <Text
-            size="xs"
-            fw={600}
-            c="dimmed"
-            px="xs"
-            mb="xs"
-            style={{ textTransform: "uppercase", fontSize: "11px" }}
-          >
-            Favorites
-          </Text>
-          {favorites.map((name) => {
-            const t = tables.find((tb) => tb.name === name);
-            return (
-              <NavLink
-                key={name}
-                label={name}
-                leftSection={<IconStarFilled size={16} />}
-                active={currentTable === name}
-                onClick={() => selectTable(name)}
-                style={{ borderRadius: 4 }}
-              />
-            );
-          })}
-
-          <Text
-            size="xs"
-            fw={600}
-            c="dimmed"
-            px="xs"
-            mb="xs"
-            mt="lg"
-            style={{ textTransform: "uppercase", fontSize: "11px" }}
-          >
-            Tables
-          </Text>
-          {tables
-            .filter((t) => !favorites.includes(t.name))
-            .map((t) => (
-              <NavLink
-                key={t.name}
-                label={t.name}
-                leftSection={<IconTable size={16} />}
-                active={currentTable === t.name}
-                onClick={() => selectTable(t.name)}
-                style={{ borderRadius: 4 }}
-              />
-            ))}
-
           <NavLink
             label="SQL Runner"
             leftSection={<IconTerminal2 size={16} />}
@@ -905,9 +845,150 @@ export default function App() {
               setSqlMode(!sqlMode);
               if (!sqlMode) setCurrentTable(null);
             }}
-            style={{ borderRadius: 4, marginTop: 8 }}
+            style={{ borderRadius: 6 }}
           />
+          <NavLink
+            label="ER Diagram"
+            leftSection={<IconSitemap size={16} />}
+            onClick={() => loadErd()}
+            style={{ borderRadius: 6 }}
+          />
+        </Stack>
+
+        <Divider my="sm" />
+
+        <ScrollArea style={{ flex: 1 }}>
+          <Stack gap={0}>
+            <Text
+              size="xs"
+              fw={600}
+              c="dimmed"
+              px="xs"
+              mb={4}
+              mt="xs"
+              style={{ textTransform: "uppercase", fontSize: "11px" }}
+            >
+              Favorites
+            </Text>
+            {favorites.map((name) => {
+              const t = tables.find((tb) => tb.name === name);
+              return (
+                <NavLink
+                  key={name}
+                  label={name}
+                  leftSection={<IconStarFilled size={16} />}
+                  active={currentTable === name}
+                  onClick={() => selectTable(name)}
+                  style={{ borderRadius: 6 }}
+                />
+              );
+            })}
+
+            {favorites.length === 0 && (
+              <Text size="xs" c="dimmed" px="sm" py={2} fs="italic">
+                No favorites
+              </Text>
+            )}
+
+            <Text
+              size="xs"
+              fw={600}
+              c="dimmed"
+              px="xs"
+              mb={4}
+              mt="lg"
+              style={{ textTransform: "uppercase", fontSize: "11px" }}
+            >
+              Tables
+            </Text>
+            {tables
+              .filter((t) => !favorites.includes(t.name))
+              .map((t) => (
+                <NavLink
+                  key={t.name}
+                  label={t.name}
+                  leftSection={<IconTable size={16} />}
+                  active={currentTable === t.name}
+                  onClick={() => selectTable(t.name)}
+                  style={{ borderRadius: 6 }}
+                />
+              ))}
+          </Stack>
         </ScrollArea>
+
+        <Divider my="sm" />
+
+        {/* User Menu */}
+        <Menu shadow="md" width={200} position="right-end">
+          <Menu.Target>
+            <Button
+              variant="subtle"
+              color="gray"
+              fullWidth
+              justify="space-between"
+              size="md"
+              px={8}
+              py={4}
+              style={{
+                height: "auto",
+                borderRadius: 6,
+                color: "var(--mantine-color-text)",
+              }}
+            >
+              <Group gap="xs">
+                <Box
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    backgroundColor: "#E5E7EB",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#374151",
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                >
+                  AD
+                </Box>
+                <Box style={{ textAlign: "left" }}>
+                  <Text size="sm" fw={500} lh={1.2}>
+                    Admin
+                  </Text>
+                  <Text size="xs" c="dimmed" lh={1.2}>
+                    sqlite@local
+                  </Text>
+                </Box>
+              </Group>
+              <IconSelector size={14} color="gray" />
+            </Button>
+          </Menu.Target>
+
+          <Menu.Dropdown>
+            <Menu.Label>Application</Menu.Label>
+            <Menu.Item
+              leftSection={
+                dark ? <IconSun size={14} /> : <IconMoon size={14} />
+              }
+              onClick={() => toggleColorScheme()}
+            >
+              Mode: {dark ? "Dark" : "Light"}
+            </Menu.Item>
+            <Menu.Item leftSection={<IconSettings size={14} />}>
+              Settings
+            </Menu.Item>
+            <Menu.Item leftSection={<IconDeviceLaptop size={14} />}>
+              Shortcuts
+            </Menu.Item>
+
+            <Menu.Divider />
+
+            <Menu.Item color="red" leftSection={<IconLogout size={14} />}>
+              Logout
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
       </AppShell.Navbar>
 
       <AppShell.Main>
@@ -921,7 +1002,7 @@ export default function App() {
 
             <Paper p="sm" withBorder bg="gray.1" mb="xl">
               <Group>
-                <IconSparkles size={20} color="var(--mantine-color-violet-6)" />
+                <IconSparkles size={20} />
                 <TextInput
                   placeholder="Ask AI to write SQL..."
                   variant="unstyled"
@@ -956,49 +1037,169 @@ export default function App() {
             {/* History & Results would go here - simplified for this view */}
           </Box>
         ) : !currentTable ? (
-          // DASHBOARD / EMPTY STATE
-          <Box p="xl" style={{ maxWidth: 900, margin: "0 auto" }}>
-            <Stack align="center" mt={50} mb={50}>
-              <IconDatabase size={64} color="#e6e6e6" />
-              <Title order={2}>Welcome to SQLite</Title>
-              <Text c="dimmed">
-                Select a table from the sidebar to start editing.
-              </Text>
-            </Stack>
+          // DASHBOARD / OVERVIEW
+          <Box p="xl" style={{ maxWidth: 1000, margin: "0 auto" }}>
+            <Title order={2} mb="xl">
+              Overview
+            </Title>
 
-            <SimpleGrid cols={2} spacing="md">
+            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md" mb="xl">
+              {/* Stats - Big Numbers */}
               <Paper withBorder p="md" radius="md">
-                <Text fw={600} mb="xs">
-                  Quick Actions
+                <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                  Total Tables
                 </Text>
-                <Stack gap="xs">
-                  <Button
-                    variant="light"
-                    justify="start"
-                    leftSection={<IconTerminal2 size={16} />}
+                <Text fz={32} fw={600} mt={4}>
+                  {tables.length}
+                </Text>
+              </Paper>
+              <Paper withBorder p="md" radius="md">
+                <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                  Favorites
+                </Text>
+                <Text fz={32} fw={600} mt={4}>
+                  {favorites.length}
+                </Text>
+              </Paper>
+              <Paper withBorder p="md" radius="md">
+                <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                  System
+                </Text>
+                <Group gap={6} mt={12}>
+                  <Badge variant="dot" color="green">
+                    Online
+                  </Badge>
+                  <Text size="sm" c="dimmed">
+                    SQLite
+                  </Text>
+                </Group>
+              </Paper>
+            </SimpleGrid>
+
+            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
+              {/* Recent Activity */}
+              <Stack>
+                <Text fw={600} size="sm" c="dimmed" tt="uppercase">
+                  Recent Activity
+                </Text>
+                <Paper withBorder radius="md" overflow="hidden">
+                  <Stack gap={0}>
+                    {recentTables.length === 0 ? (
+                      <Box p="lg" ta="center" c="dimmed">
+                        <IconHistory size={24} style={{ opacity: 0.5 }} />
+                        <Text size="sm" mt="xs">
+                          No tables viewed yet.
+                        </Text>
+                      </Box>
+                    ) : (
+                      recentTables.map((name) => (
+                        <Group
+                          key={name}
+                          justify="space-between"
+                          p="md"
+                          style={{
+                            borderBottom:
+                              "1px solid var(--mantine-color-gray-2)",
+                            cursor: "pointer",
+                            transition: "background 0.1s",
+                          }}
+                          onClick={() => selectTable(name)}
+                          className="editable-cell" // Reuse hover effect
+                        >
+                          <Group gap="sm">
+                            {getTableIcon(name)}
+                            <Text fw={500}>{name}</Text>
+                          </Group>
+                          <IconChevronRight size={14} color="gray" />
+                        </Group>
+                      ))
+                    )}
+                  </Stack>
+                </Paper>
+              </Stack>
+
+              {/* Quick Actions */}
+              <Stack>
+                <Text fw={600} size="sm" c="dimmed" tt="uppercase">
+                  Tools
+                </Text>
+                <SimpleGrid cols={1} spacing="sm">
+                  <Paper
+                    withBorder
+                    p="md"
+                    radius="md"
                     onClick={() => setSqlMode(true)}
+                    style={{ cursor: "pointer" }}
+                    className="editable-cell"
                   >
-                    Run SQL
-                  </Button>
-                  <Button
-                    variant="light"
-                    justify="start"
-                    leftSection={<IconSearch size={16} />}
-                    onClick={openCommand}
+                    <Group justify="space-between" mb="xs">
+                      <ThemeIcon
+                        size="lg"
+                        variant="light"
+                        color="gray"
+                        radius="md"
+                      >
+                        <IconTerminal2 size={20} />
+                      </ThemeIcon>
+                      <IconChevronRight size={14} color="gray" />
+                    </Group>
+                    <Text fw={600}>SQL Runner</Text>
+                    <Text size="xs" c="dimmed" mt={4}>
+                      Execute raw queries and ask AI.
+                    </Text>
+                  </Paper>
+
+                  <Paper
+                    withBorder
+                    p="md"
+                    radius="md"
+                    onClick={() => openCommand()}
+                    style={{ cursor: "pointer" }}
+                    className="editable-cell"
                   >
-                    Search
-                  </Button>
-                </Stack>
-              </Paper>
-              <Paper withBorder p="md" radius="md">
-                <Text fw={600} mb="xs">
-                  Recent Tables
-                </Text>
-                {/* Placeholder for recents */}
-                <Text size="sm" c="dimmed">
-                  No recent activity.
-                </Text>
-              </Paper>
+                    <Group justify="space-between" mb="xs">
+                      <ThemeIcon
+                        size="lg"
+                        variant="light"
+                        color="gray"
+                        radius="md"
+                      >
+                        <IconSearch size={20} />
+                      </ThemeIcon>
+                      <IconChevronRight size={14} color="gray" />
+                    </Group>
+                    <Text fw={600}>Global Search</Text>
+                    <Text size="xs" c="dimmed" mt={4}>
+                      Find tables, commands, and records.
+                    </Text>
+                  </Paper>
+
+                  <Paper
+                    withBorder
+                    p="md"
+                    radius="md"
+                    onClick={() => loadErd()}
+                    style={{ cursor: "pointer" }}
+                    className="editable-cell"
+                  >
+                    <Group justify="space-between" mb="xs">
+                      <ThemeIcon
+                        size="lg"
+                        variant="light"
+                        color="gray"
+                        radius="md"
+                      >
+                        <IconSitemap size={20} />
+                      </ThemeIcon>
+                      <IconChevronRight size={14} color="gray" />
+                    </Group>
+                    <Text fw={600}>Schema View</Text>
+                    <Text size="xs" c="dimmed" mt={4}>
+                      Visual Entity-Relationship Diagram.
+                    </Text>
+                  </Paper>
+                </SimpleGrid>
+              </Stack>
             </SimpleGrid>
           </Box>
         ) : (
@@ -1052,7 +1253,7 @@ export default function App() {
               <Group gap="xs">
                 <Button
                   size="xs"
-                  color="blue"
+                  color="dark"
                   leftSection={<IconPlus size={14} />}
                   onClick={openNewRecord}
                 >
@@ -1089,7 +1290,7 @@ export default function App() {
                   onClick={() => toggleFavorite(currentTable)}
                 >
                   {favorites.includes(currentTable) ? (
-                    <IconStarFilled size={16} color="orange" />
+                    <IconStarFilled size={16} />
                   ) : (
                     <IconStar size={16} />
                   )}
@@ -1100,7 +1301,7 @@ export default function App() {
             {/* CONTENT */}
             <Box px="xl" py="md">
               {selectedRows.size > 0 && (
-                <Paper p="xs" bg="blue" radius="sm" mb="md">
+                <Paper p="xs" bg="dark" radius="sm" mb="md">
                   <Group justify="space-between">
                     <Text c="white" size="sm">
                       {selectedRows.size} selected
@@ -1424,13 +1625,7 @@ export default function App() {
                 <Table.Td>{c.type || "TEXT"}</Table.Td>
                 <Table.Td>{c.notnull ? "NOT NULL" : "NULL"}</Table.Td>
                 <Table.Td>{c.dflt_value || "-"}</Table.Td>
-                <Table.Td>
-                  {c.pk ? (
-                    <IconKey size={16} color="var(--mantine-color-yellow-6)" />
-                  ) : (
-                    "-"
-                  )}
-                </Table.Td>
+                <Table.Td>{c.pk ? <IconKey size={16} /> : "-"}</Table.Td>
               </Table.Tr>
             ))}
           </Table.Tbody>
