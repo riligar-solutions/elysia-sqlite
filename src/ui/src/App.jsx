@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   AppShell,
   NavLink,
@@ -67,6 +67,9 @@ import {
   IconSelector,
   IconFileText,
 } from "@tabler/icons-react";
+
+import { useFilter } from "./hooks/useFilter";
+import { Filter } from "./components/Filter";
 
 const API = "/admin/api";
 
@@ -763,7 +766,32 @@ export default function App() {
     return <Icon size={32} />;
   };
 
-  const tableRows = rows.map((row) => (
+  // Filter Logic
+  const filterKeys = useMemo(() => columns.map((c) => c.name), [columns]);
+
+  // Create a filter options object
+  const filterOptions = useMemo(() => {
+    const options = {};
+    columns.forEach((col) => {
+      // Get unique values from current rows for this column
+      const values = new Set(
+        rows
+          .map((r) => r[col.name])
+          .filter((v) => v !== null && v !== undefined)
+      );
+      // Limit to 20 options to keep UI clean
+      options[col.name] = Array.from(values).map(String).slice(0, 20);
+    });
+    return options;
+  }, [columns, rows]);
+
+  const {
+    filteredItems: filteredRows,
+    data: filterData,
+    setData: filterSetData,
+  } = useFilter(rows, filterKeys);
+
+  const tableRows = filteredRows.map((row) => (
     <Table.Tr
       key={row[pk]}
       bg={selectedRows.has(String(row[pk])) ? "gray.0" : undefined}
@@ -1001,9 +1029,19 @@ export default function App() {
               <Title order={1}>SQL Runner</Title>
             </Group>
 
-            <Paper p="sm" withBorder bg="gray.1" mb="xl">
+            <Paper
+              p="sm"
+              withBorder
+              bg="white"
+              shadow="sm"
+              radius="md"
+              mb="xl"
+              style={{
+                borderColor: "var(--mantine-color-indigo-2)",
+              }}
+            >
               <Group>
-                <IconSparkles size={20} />
+                <IconSparkles size={20} color="var(--mantine-color-indigo-6)" />
                 <TextInput
                   placeholder="Ask AI to write SQL..."
                   variant="unstyled"
@@ -1011,8 +1049,14 @@ export default function App() {
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && askAi()}
+                  styles={{
+                    input: {
+                      fontSize: "15px",
+                      fontWeight: 500,
+                    },
+                  }}
                 />
-                {aiLoading && <Loader size="xs" />}
+                {aiLoading && <Loader size="xs" color="indigo" />}
               </Group>
             </Paper>
 
@@ -1369,6 +1413,15 @@ export default function App() {
                   </Group>
                 </Paper>
               )}
+
+              {/* Filter Component */}
+              <Box mb="md">
+                <Filter
+                  data={filterData}
+                  setData={filterSetData}
+                  filterOptions={filterOptions}
+                />
+              </Box>
 
               {loading ? (
                 <Center py="xl">
