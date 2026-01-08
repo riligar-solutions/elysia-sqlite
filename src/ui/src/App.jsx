@@ -54,6 +54,7 @@ import {
   IconCommand,
   IconX,
   IconKey,
+  IconLink,
   IconLetterA,
   IconHash,
   IconCalendar,
@@ -2054,7 +2055,7 @@ export default function App() {
               <Table.Th>Type</Table.Th>
               <Table.Th>Nullable</Table.Th>
               <Table.Th>Default</Table.Th>
-              <Table.Th>PK</Table.Th>
+              <Table.Th>Key</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -2064,7 +2065,26 @@ export default function App() {
                 <Table.Td>{c.type || "TEXT"}</Table.Td>
                 <Table.Td>{c.notnull ? "NOT NULL" : "NULL"}</Table.Td>
                 <Table.Td>{c.dflt_value || "-"}</Table.Td>
-                <Table.Td>{c.pk ? <IconKey size={16} /> : "-"}</Table.Td>
+                <Table.Td>
+                  <Group gap={4}>
+                    {c.pk ? (
+                      <Tooltip label="Primary Key">
+                        <IconKey size={16} />
+                      </Tooltip>
+                    ) : null}
+                    {c.fk ? (
+                      <Tooltip
+                        label={`Foreign Key to ${c.fk.table}.${c.fk.column}`}
+                      >
+                        <IconLink
+                          size={16}
+                          color="var(--mantine-color-indigo-4)"
+                        />
+                      </Tooltip>
+                    ) : null}
+                    {!c.pk && !c.fk ? "-" : null}
+                  </Group>
+                </Table.Td>
               </Table.Tr>
             ))}
           </Table.Tbody>
