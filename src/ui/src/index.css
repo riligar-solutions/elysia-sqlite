@@ -1,0 +1,28 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Notion-style editable cell */
+.editable-cell {
+  transition: background-color 0.1s;
+}
+
+.editable-cell:hover {
+  background-color: var(--mantine-color-gray-1);
+}
+
+[data-mantine-color-scheme="dark"] .editable-cell:hover {
+  background-color: var(--mantine-color-dark-5);
+}
