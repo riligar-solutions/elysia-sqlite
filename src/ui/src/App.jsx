@@ -73,6 +73,7 @@ import {
 import { useFilter } from "./hooks/useFilter";
 import { Filter } from "./components/Filter";
 import { ExportButton } from "./components/ExportButton";
+import { ButtonDelete } from "./components/HoldButton";
 
 const API = "/admin/api";
 
@@ -381,14 +382,6 @@ export default function App() {
   // Command palette items
   const commandActions = [
     {
-      label: "New Record",
-      icon: IconPlus,
-      action: () => {
-        openNewRecord();
-        closeCommand();
-      },
-    },
-    {
       label: "Run SQL",
       icon: IconTerminal2,
       action: () => {
@@ -679,8 +672,6 @@ export default function App() {
 
   // Delete record
   const deleteRecord = async (pk) => {
-    if (!confirm("Excluir registro?")) return;
-
     const pkCol = columns.find((c) => c.pk === 1)?.name || columns[0]?.name;
 
     try {
@@ -717,8 +708,6 @@ export default function App() {
 
   // Bulk delete
   const bulkDelete = async () => {
-    if (!confirm(`Excluir ${selectedRows.size} registros?`)) return;
-
     const pkCol = columns.find((c) => c.pk === 1)?.name || columns[0]?.name;
 
     for (const pk of selectedRows) {
@@ -1078,8 +1067,10 @@ export default function App() {
                 height: "28px",
               },
             }}
-            onKeyDown={(e) => {
+            onKeyDownCapture={(e) => {
               if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
                 setEditingCell(null);
               }
             }}
@@ -1238,13 +1229,13 @@ export default function App() {
         </Table.Td>
       ))}
       <Table.Td>
-        <ActionIcon
+        <ButtonDelete
+          type="icon"
+          onDelete={() => deleteRecord(row[pk])}
+          size="sm"
           variant="subtle"
           color="red"
-          onClick={() => deleteRecord(row[pk])}
-        >
-          <IconTrash size={16} />
-        </ActionIcon>
+        />
       </Table.Td>
     </Table.Tr>
   ));
@@ -2001,14 +1992,14 @@ export default function App() {
                       {selectedRows.size} selected
                     </Text>
                     <Group>
-                      <Button
+                      <ButtonDelete
                         size="xs"
                         color="red"
                         variant="white"
-                        onClick={bulkDelete}
+                        onDelete={bulkDelete}
                       >
                         Delete
-                      </Button>
+                      </ButtonDelete>
                       <ExportButton
                         data={rows.filter((r) =>
                           selectedRows.has(
