@@ -4,7 +4,7 @@
   "description": "Plugin ElysiaJS para gerenciamento de bancos de dados SQLite",
   "type": "module",
   "scripts": {
-    "dev": "bun run demo/index.js",
+    "dev": "bun run --watch demo/index.js",
     "dev:ui": "cd src/ui && bun run dev",
     "build:ui": "cd src/ui && bun run build"
   },
