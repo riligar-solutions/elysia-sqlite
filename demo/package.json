@@ -1,0 +1,13 @@
+{
+  "name": "elysia-sqlite-demo",
+  "version": "1.0.0",
+  "description": "Demonstração do plugin SQLite Admin para ElysiaJS",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.js",
+    "dev": "bun run --watch index.js"
+  },
+  "dependencies": {
+    "elysia": "^1.2.25"
+  }
+}
