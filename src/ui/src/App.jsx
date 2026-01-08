@@ -27,6 +27,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure, useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
+import mermaid from "mermaid";
 import {
   IconDatabase,
   IconTable,
@@ -54,6 +55,8 @@ import {
   IconHash,
   IconCalendar,
   IconCheck,
+  IconSparkles,
+  IconSitemap,
 } from "@tabler/icons-react";
 
 const API = "/admin/api";
@@ -124,6 +127,8 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sqlMode, setSqlMode] = useState(false);
   const [sqlQuery, setSqlQuery] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
   const [editingCell, setEditingCell] = useState(null); // { rowPk, column }
 
   // Persisted state
@@ -148,6 +153,8 @@ export default function App() {
   const [commandOpened, { open: openCommand, close: closeCommand }] =
     useDisclosure(false);
   const [historyOpened, { toggle: toggleHistory }] = useDisclosure(false);
+  const [erdOpened, { open: openErd, close: closeErd }] = useDisclosure(false);
+  const [erdSvg, setErdSvg] = useState("");
 
   // Filters
   const [filters, setFilters] = useState([]);
@@ -453,11 +460,45 @@ export default function App() {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    notifications.show({
-      title: "Exportado",
-      message: filename,
-      color: "green",
-    });
+    closeExport();
+  };
+
+  const askAi = async () => {
+    if (!aiPrompt.trim()) return;
+    setAiLoading(true);
+
+    try {
+      const res = await fetch(`${API}/ai/sql`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: aiPrompt }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setSqlQuery(data.sql);
+        notifications.show({
+          title: "AI",
+          message: "SQL Gerado!",
+          color: "blue",
+          icon: <IconSparkles size={16} />,
+        });
+      } else {
+        notifications.show({
+          title: "Erro AI",
+          message: data.error,
+          color: "red",
+        });
+      }
+    } catch (err) {
+      notifications.show({
+        title: "Erro",
+        message: "Erro ao consultar AI",
+        color: "red",
+      });
+    }
+
+    setAiLoading(false);
   };
 
   // Inline edit - update cell
@@ -507,6 +548,50 @@ export default function App() {
     }
 
     setEditingCell(null);
+  };
+
+  // Load and render ERD
+  const loadErd = async () => {
+    try {
+      const res = await fetch(`${API}/meta/schema`);
+      const data = await res.json();
+
+      if (data.success) {
+        // Generate Mermaid syntax
+        let syntax = "erDiagram\n";
+
+        data.schema.forEach((table) => {
+          syntax += `  ${table.name} {\n`;
+          table.columns.forEach((col) => {
+            const type = col.type || "TEXT";
+            const key = col.pk ? "PK" : col.fk ? "FK" : "";
+            syntax += `    ${type} ${col.name} ${key}\n`;
+          });
+          syntax += "  }\n";
+
+          // Relationships
+          table.fks.forEach((fk) => {
+            syntax += `  ${table.name} }o--|| ${fk.table} : "${fk.from}"\n`;
+          });
+        });
+
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: dark ? "dark" : "neutral",
+          securityLevel: "loose",
+        });
+
+        const { svg } = await mermaid.render("erd-graph", syntax);
+        setErdSvg(svg);
+        openErd();
+      }
+    } catch (err) {
+      notifications.show({
+        title: "Erro",
+        message: "Erro ao gerar ERD",
+        color: "red",
+      });
+    }
   };
 
   // Render table
@@ -719,6 +804,12 @@ export default function App() {
 
         <Divider my="sm" label="Favoritos" labelPosition="left" />
 
+        <NavLink
+          label="ER Diagram"
+          leftSection={<IconSitemap size={18} />}
+          onClick={() => loadErd()}
+        />
+
         {favorites.length === 0 ? (
           <Text size="xs" c="dimmed" px="xs">
             Nenhum favorito
@@ -730,16 +821,23 @@ export default function App() {
               <NavLink
                 key={name}
                 label={name}
-                leftSection={
-                  <IconStarFilled
-                    size={16}
-                    color="var(--mantine-color-yellow-6)"
-                  />
-                }
+                leftSection={<IconTable size={16} />}
                 rightSection={
-                  <Badge size="xs" variant="light">
-                    {t?.count || "?"}
-                  </Badge>
+                  <Group gap={4}>
+                    <ActionIcon
+                      size="xs"
+                      variant="subtle"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(name);
+                      }}
+                    >
+                      <IconStarFilled size={14} />
+                    </ActionIcon>
+                    <Badge size="xs" variant="light">
+                      {t?.count || "?"}
+                    </Badge>
+                  </Group>
                 }
                 active={currentTable === name}
                 onClick={() => selectTable(name)}
@@ -792,7 +890,31 @@ export default function App() {
             <Text size="sm" c="dimmed">
               Database / SQL Runner
             </Text>
+
+            <Paper p="sm" withBorder bg="gray.0">
+              <Group>
+                <IconSparkles size={20} color="var(--mantine-color-violet-6)" />
+                <TextInput
+                  placeholder="Ex: Mostre os 5 produtos mais caros"
+                  style={{ flex: 1 }}
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && askAi()}
+                />
+                <Button
+                  variant="light"
+                  color="violet"
+                  onClick={askAi}
+                  loading={aiLoading}
+                  leftSection={<IconSparkles size={16} />}
+                >
+                  Gerar SQL
+                </Button>
+              </Group>
+            </Paper>
+
             <Textarea
+              label="SQL Query"
               placeholder="SELECT * FROM tabela"
               minRows={5}
               value={sqlQuery}
@@ -1296,6 +1418,14 @@ export default function App() {
             }}
           />
           <NavLink
+            label="ER Diagram"
+            leftSection={<IconSitemap size={16} />}
+            onClick={() => {
+              loadErd();
+              closeCommand();
+            }}
+          />
+          <NavLink
             label="Exportar"
             leftSection={<IconDownload size={16} />}
             onClick={() => {
@@ -1304,6 +1434,22 @@ export default function App() {
             }}
           />
         </Stack>
+      </Modal>
+
+      {/* ERD Modal */}
+      <Modal
+        opened={erdOpened}
+        onClose={closeErd}
+        title="Entity Relationship Diagram"
+        size="100%"
+        styles={{ body: { height: "calc(100vh - 100px)", overflow: "hidden" } }}
+      >
+        <ScrollArea h="100%">
+          <div
+            dangerouslySetInnerHTML={{ __html: erdSvg }}
+            style={{ textAlign: "center", minWidth: "1000px" }}
+          />
+        </ScrollArea>
       </Modal>
     </AppShell>
   );

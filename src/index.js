@@ -186,5 +186,98 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin" }) => {
           return { success: false, error: error.message };
         }
       })
+
+      // AI SQL Generation
+      .post("/api/ai/sql", async ({ body }) => {
+        try {
+          const { prompt } = body;
+          const apiKey = process.env.OPENROUTER_API_KEY;
+          const model =
+            process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct";
+
+          if (!apiKey) {
+            return {
+              success: false,
+              error: "OpenRouter API Key not configured",
+            };
+          }
+
+          // Get database schema context
+          const tables = db
+            .query(
+              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            )
+            .all();
+          let schemaContext = "";
+
+          for (const t of tables) {
+            const cols = db.query(`PRAGMA table_info(${t.name})`).all();
+            schemaContext += `Table ${t.name}: ${cols
+              .map((c) => c.name + "(" + c.type + ")")
+              .join(", ")}\n`;
+          }
+
+          const response = await fetch(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: model,
+                messages: [
+                  {
+                    role: "system",
+                    content: `You are a SQLite expert. Given the following database schema:\n${schemaContext}\nGenerate a valid SQLite query for the user's request. Return ONLY the raw SQL query, no markdown formatting, no explanations.`,
+                  },
+                  {
+                    role: "user",
+                    content: prompt,
+                  },
+                ],
+              }),
+            }
+          );
+
+          const data = await response.json();
+          const sql = data.choices?.[0]?.message?.content
+            ?.trim()
+            .replace(/```sql/g, "")
+            .replace(/```/g, "");
+
+          return { success: true, sql };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      })
+
+      // Get full database schema for ERD
+      .get("/api/meta/schema", () => {
+        try {
+          const tables = db
+            .query(
+              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            )
+            .all();
+          const schema = tables.map((t) => {
+            const columns = db.query(`PRAGMA table_info(${t.name})`).all();
+            const fks = db.query(`PRAGMA foreign_key_list(${t.name})`).all();
+            return {
+              name: t.name,
+              columns,
+              fks: fks.map((fk) => ({
+                from: fk.from,
+                table: fk.table,
+                to: fk.to,
+              })),
+            };
+          });
+          return { success: true, schema };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      })
   );
 };

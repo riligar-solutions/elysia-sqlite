@@ -13,6 +13,7 @@
     "@mantine/hooks": "^7.17.4",
     "@mantine/notifications": "^7.17.4",
     "@tabler/icons-react": "^3.31.0",
+    "mermaid": "^11.12.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
