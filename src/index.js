@@ -109,6 +109,18 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin" }) => {
         }
       })
 
+      // Atualiza um registro (inline edit)
+      .post("/api/table/:name/update", ({ params, body }) => {
+        try {
+          const { column, value, pkColumn, pkValue } = body;
+          const sql = `UPDATE ${params.name} SET ${column} = ? WHERE ${pkColumn} = ?`;
+          const result = db.run(sql, [value, pkValue]);
+          return { success: true, changes: result.changes };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      })
+
       // Exclui um registro
       .post("/api/table/:name/delete", ({ params, body }) => {
         try {
