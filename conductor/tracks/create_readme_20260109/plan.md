@@ -13,7 +13,7 @@ Create a professional README.md for the `@riligar/elysia-sqlite` package based o
 - [x] Task: Compose the Installation and Quick Start section with accurate code examples and peer dependency list.
 - [x] Task: Build the Configuration tables for both plugin options and runtime settings.
 - [x] Task: Outline the API Endpoints (Pages, Auth, Data Operations).
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Drafting' (Protocol in workflow.md)
+- [ ] Task: Conductor - User Manual Verification 'Phase 2: Drafting' (Protocol in workflow.md) [checkpoint: 11dda11]
 
 ## Phase 3: Finalization & Review
 - [ ] Task: Verify all links (RiLiGar website, GitHub repo, Issues).
