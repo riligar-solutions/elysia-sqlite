@@ -76,3 +76,48 @@ The following settings are managed via the **Settings** tab in the dashboard and
 | `totpSecret`      | Secret key for Two-Factor Authentication (managed automatically) |
 
 > **Note:** The configuration file contains sensitive credentials. Ensure it is included in your `.gitignore` if necessary or secured appropriately in production environments.
+
+## 🔌 API Endpoints
+
+The plugin adds the following routes under your configured `prefix` (default `/admin`):
+
+### Authentication
+
+| Method | Path             | Description                                      |
+| ------ | ---------------- | ------------------------------------------------ |
+| POST   | `/auth/login`    | Authenticate user (username, password, 2FA code) |
+| POST   | `/auth/logout`   | End session                                      |
+| GET    | `/auth/status`   | Check if system is configured and user authenticated |
+| POST   | `/api/setup`     | Initial setup (create admin credentials)         |
+
+### Data Operations
+
+| Method | Path                     | Description                                   |
+| ------ | ------------------------ | --------------------------------------------- |
+| GET    | `/api/tables`            | List all tables in database                   |
+| GET    | `/api/table/:name/rows`  | Get rows for a table (pagination support)     |
+| POST   | `/api/table/:name/insert`| Insert new record                             |
+| POST   | `/api/table/:name/update`| Update record (inline edit)                   |
+| POST   | `/api/table/:name/delete`| Delete record                                 |
+| GET    | `/api/table/:name`       | Get table schema (columns and foreign keys)   |
+
+### Advanced Features
+
+| Method | Path                     | Description                                   |
+| ------ | ------------------------ | --------------------------------------------- |
+| POST   | `/api/query`             | Execute raw SQL query                         |
+| POST   | `/api/ai/sql`            | Generate SQL from natural language prompt     |
+| POST   | `/api/resolve-fk`        | Resolve IDs to display labels for foreign keys|
+| GET    | `/api/meta/schema`       | Get full database schema for ERD              |
+
+## 🤝 Contributing
+
+Contributions are welcome! See our [GitHub repository](https://github.com/riligar-solutions/elysia-sqlite) for more information.
+
+## 📄 License
+
+MIT © [RiLiGar](https://riligar.click/)
+
+<p align="center">
+  Made with ❤️ by <a href="https://riligar.click/">RiLiGar</a>
+</p>
