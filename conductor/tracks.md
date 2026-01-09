@@ -6,3 +6,9 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ## [x] Track: Implement a basic "Browse Data" view
 *Link: [./conductor/tracks/browse_data_20260109/](./conductor/tracks/browse_data_20260109/)*
+
+---
+
+## [~] Track: Create a comprehensive README.md
+*Link: [./conductor/tracks/create_readme_20260109/](./conductor/tracks/create_readme_20260109/)*
+
