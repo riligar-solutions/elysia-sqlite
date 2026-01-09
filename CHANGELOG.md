@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.0.0...v1.1.0) (2026-01-09)
+
+
+### Features
+
+* remove @elysiajs/static dependency ([3e03819](https://github.com/riligar-solutions/elysia-sqlite/commit/3e03819dd2226382de3bb86411e9bf8aef6b1db6))
+
 # 1.0.0 (2026-01-09)
 
 
