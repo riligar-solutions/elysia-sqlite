@@ -78,6 +78,9 @@ import { ButtonDelete } from "./components/HoldButton";
 import { Onboarding } from "./components/Onboarding";
 import { Login } from "./components/Login";
 import { SecuritySettings } from "./components/SecuritySettings";
+import { TableSelector } from "./components/TableSelector";
+import { DataGrid } from "./components/DataGrid";
+import { Pagination } from "./components/Pagination";
 
 const API = "/admin/api";
 
@@ -953,266 +956,7 @@ export default function App() {
   // Render table
   const pk = columns.find((c) => c.pk === 1)?.name || columns[0]?.name;
 
-  // FK Preview Component
-  const FKPreview = ({ table, id, label }) => {
-    const [record, setRecord] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [fetched, setFetched] = useState(false);
-
-    const loadRecord = async () => {
-      if (fetched) return;
-      setLoading(true);
-      try {
-        const res = await fetch(`${API}/query`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sql: `SELECT * FROM ${table} WHERE rowid = ${id} LIMIT 1`,
-          }),
-        });
-        const data = await res.json();
-        if (data.success && data.rows && data.rows.length > 0) {
-          setRecord(data.rows[0]);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      setLoading(false);
-      setFetched(true);
-    };
-
-    return (
-      <HoverCard width={280} shadow="md" openDelay={300} onOpen={loadRecord}>
-        <HoverCard.Target>
-          <Group gap={6} wrap="nowrap" style={{ cursor: "pointer" }}>
-            <Badge
-              variant="outline"
-              color="gray"
-              size="sm"
-              leftSection={<IconLink size={10} />}
-              styles={{ label: { fontWeight: 500 } }}
-            >
-              {id}
-            </Badge>
-            {label && (
-              <Text size="xs" c="dimmed" lineClamp={1}>
-                {label}
-              </Text>
-            )}
-          </Group>
-        </HoverCard.Target>
-        <HoverCard.Dropdown>
-          {loading ? (
-            <Center p="sm">
-              <Loader size="xs" type="dots" />
-            </Center>
-          ) : record ? (
-            <Stack gap="xs">
-              <Group justify="space-between">
-                <Text size="xs" fw={700} c="dimmed" tt="uppercase">
-                  {table}
-                </Text>
-                <Badge size="xs" variant="light">
-                  ID: {id}
-                </Badge>
-              </Group>
-              <Text size="sm" fw={600} lineClamp={2}>
-                {label || "Record"}
-              </Text>
-              <Divider />
-              <Stack gap={4}>
-                {Object.entries(record)
-                  .filter(
-                    ([k]) => k !== "id" && !k.toLowerCase().includes("id")
-                  )
-                  .slice(0, 3)
-                  .map(([k, v]) => (
-                    <Group
-                      key={k}
-                      justify="space-between"
-                      align="flex-start"
-                      wrap="nowrap"
-                    >
-                      <Text size="xs" c="dimmed" style={{ minWidth: 60 }}>
-                        {k}:
-                      </Text>
-                      <Text
-                        size="xs"
-                        lineClamp={1}
-                        style={{ textAlign: "right" }}
-                      >
-                        {String(v)}
-                      </Text>
-                    </Group>
-                  ))}
-              </Stack>
-            </Stack>
-          ) : (
-            <Text size="xs" c="dimmed">
-              No preview available
-            </Text>
-          )}
-        </HoverCard.Dropdown>
-      </HoverCard>
-    );
-  };
-
   // Editable Cell Component with FK support
-  const EditableCell = ({ row, col }) => {
-    const value = row[col.name];
-    const rowPk = row[pk];
-    const isEditing =
-      editingCell?.rowPk === rowPk && editingCell?.column === col.name;
-    const isPK = col.pk === 1;
-    const hasFK = !!col.fk;
-
-    // State for FK options
-    const [fkOptions, setFkOptions] = useState([]);
-    const [fkLoading, setFkLoading] = useState(false);
-
-    // Load FK options when editing starts
-    useEffect(() => {
-      if (isEditing && hasFK) {
-        setFkLoading(true);
-        fetch(
-          `${API}/table/${currentTable}/fk-options?refTable=${col.fk.table}&refColumn=${col.fk.column}`
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.success) {
-              setFkOptions(
-                data.options.map((o) => ({
-                  value: String(o.value),
-                  label: `${o.label} (ID: ${o.value})`,
-                }))
-              );
-            }
-            setFkLoading(false);
-          })
-          .catch(() => setFkLoading(false));
-      }
-    }, [isEditing, hasFK]);
-
-    if (isEditing) {
-      // Foreign key - show Select
-      if (hasFK) {
-        return (
-          <Select
-            size="xs"
-            autoFocus
-            searchable
-            data={fkOptions}
-            defaultValue={value === null ? null : String(value)}
-            placeholder={
-              fkLoading ? "Carregando..." : `Selecione ${col.fk.table}`
-            }
-            onChange={(newVal) => {
-              updateCell(rowPk, col.name, newVal);
-            }}
-            onBlur={() => setEditingCell(null)}
-            styles={{
-              input: {
-                minHeight: "28px",
-                height: "28px",
-              },
-            }}
-            onKeyDownCapture={(e) => {
-              if (e.key === "Escape") {
-                e.preventDefault();
-                e.stopPropagation();
-                setEditingCell(null);
-              }
-            }}
-          />
-        );
-      }
-
-      // Regular text input
-      return (
-        <TextInput
-          size="xs"
-          autoFocus
-          defaultValue={value === null ? "" : String(value)}
-          onBlur={(e) => updateCell(rowPk, col.name, e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              updateCell(rowPk, col.name, e.target.value);
-            } else if (e.key === "Escape") {
-              setEditingCell(null);
-            }
-          }}
-          styles={{
-            input: {
-              minHeight: "28px",
-              height: "28px",
-              padding: "0 8px",
-            },
-          }}
-        />
-      );
-    }
-
-    if (value === null) {
-      return (
-        <Text
-          c="dimmed"
-          fs="italic"
-          size="sm"
-          onClick={() => !isPK && setEditingCell({ rowPk, column: col.name })}
-          style={{ cursor: isPK ? "default" : "text" }}
-        >
-          null
-        </Text>
-      );
-    }
-
-    // FK column - show as link-style
-    if (hasFK) {
-      return (
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            setEditingCell({ rowPk, column: col.name });
-          }}
-        >
-          <FKPreview
-            table={col.fk.table}
-            id={value}
-            label={fkMap[`${col.fk.table}:${value}`]}
-          />
-        </div>
-      );
-    }
-
-    if (isTagColumn(col.name)) {
-      return (
-        <Badge
-          color={getTagColor(value)}
-          variant="light"
-          onClick={() => setEditingCell({ rowPk, column: col.name })}
-          style={{ cursor: "pointer" }}
-        >
-          {value}
-        </Badge>
-      );
-    }
-
-    return (
-      <Text
-        size="sm"
-        onClick={() => !isPK && setEditingCell({ rowPk, column: col.name })}
-        style={{
-          cursor: isPK ? "default" : "text",
-          padding: "4px 0",
-          borderRadius: "4px",
-        }}
-        className={isPK ? "" : "editable-cell"}
-      >
-        {String(value)}
-      </Text>
-    );
-  };
-
   // Icon logic
   const getTableIcon = (name) => {
     if (!name) return <IconDatabase size={32} />;
@@ -1252,42 +996,6 @@ export default function App() {
     data: filterData,
     setData: filterSetData,
   } = useFilter(rows, filterKeys);
-
-  const tableRows = filteredRows.map((row) => (
-    <Table.Tr
-      key={row[pk]}
-      bg={selectedRows.has(String(row[pk])) ? "gray.0" : undefined}
-    >
-      <Table.Td>
-        <Checkbox
-          checked={selectedRows.has(String(row[pk]))}
-          onChange={(e) => {
-            const newSelected = new Set(selectedRows);
-            if (e.target.checked) {
-              newSelected.add(String(row[pk]));
-            } else {
-              newSelected.delete(String(row[pk]));
-            }
-            setSelectedRows(newSelected);
-          }}
-        />
-      </Table.Td>
-      {columns.map((col) => (
-        <Table.Td key={col.name}>
-          <EditableCell row={row} col={col} />
-        </Table.Td>
-      ))}
-      <Table.Td>
-        <ButtonDelete
-          type="icon"
-          onDelete={() => deleteRecord(row[pk])}
-          size="sm"
-          variant="subtle"
-          color="red"
-        />
-      </Table.Td>
-    </Table.Tr>
-  ));
 
   const mainApp = (
     <AppShell navbar={{ width: 260, breakpoint: "sm" }} padding="md">
@@ -1367,72 +1075,12 @@ export default function App() {
 
         <Divider my="sm" color="#E8E5E0" />
 
-        <ScrollArea style={{ flex: 1 }}>
-          <Stack gap={0}>
-            <Text
-              size="xs"
-              fw={500}
-              c="#91918E"
-              px="xs"
-              mb={4}
-              mt="xs"
-              style={{
-                textTransform: "uppercase",
-                fontSize: "11px",
-                letterSpacing: "0.03em",
-              }}
-            >
-              Favorites
-            </Text>
-            {favorites.map((name) => {
-              const t = tables.find((tb) => tb.name === name);
-              return (
-                <NavLink
-                  key={name}
-                  label={name}
-                  leftSection={<IconTable size={16} />}
-                  active={currentTable === name}
-                  onClick={() => selectTable(name)}
-                  style={{ borderRadius: 6 }}
-                />
-              );
-            })}
-
-            {favorites.length === 0 && (
-              <Text size="xs" c="dimmed" px="sm" py={2} fs="italic">
-                No favorites
-              </Text>
-            )}
-
-            <Text
-              size="xs"
-              fw={500}
-              c="#91918E"
-              px="xs"
-              mb={4}
-              mt="lg"
-              style={{
-                textTransform: "uppercase",
-                fontSize: "11px",
-                letterSpacing: "0.03em",
-              }}
-            >
-              Tables
-            </Text>
-            {tables
-              .filter((t) => !favorites.includes(t.name))
-              .map((t) => (
-                <NavLink
-                  key={t.name}
-                  label={t.name}
-                  leftSection={<IconTable size={16} />}
-                  active={currentTable === t.name}
-                  onClick={() => selectTable(t.name)}
-                  style={{ borderRadius: 6 }}
-                />
-              ))}
-          </Stack>
-        </ScrollArea>
+        <TableSelector 
+          tables={tables}
+          favorites={favorites}
+          currentTable={currentTable}
+          onSelectTable={selectTable}
+        />
 
         <Divider my="sm" color="#E8E5E0" />
 
@@ -2092,107 +1740,57 @@ export default function App() {
                   <Loader color="gray" type="dots" />
                 </Center>
               ) : (
-                <ScrollArea>
-                  <Table
-                    striped={false}
-                    highlightOnHover
-                    withTableBorder={false}
-                    verticalSpacing="xs"
-                  >
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th
-                          w={40}
-                          style={{ borderBottom: "1px solid #eee" }}
-                        >
-                          <Checkbox
-                            checked={
-                              selectedRows.size === rows.length &&
-                              rows.length > 0
-                            }
-                            indeterminate={
-                              selectedRows.size > 0 &&
-                              selectedRows.size < rows.length
-                            }
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedRows(
-                                  new Set(rows.map((r) => String(r[pk])))
-                                );
-                              } else {
-                                setSelectedRows(new Set());
-                              }
-                            }}
-                          />
-                        </Table.Th>
-                        {columns.map((col) => (
-                          <Table.Th
-                            key={col.name}
-                            onClick={() => {
-                              if (sort === col.name) {
-                                setSortDir((d) =>
-                                  d === "ASC" ? "DESC" : "ASC"
-                                );
-                              } else {
-                                setSort(col.name);
-                                setSortDir("ASC");
-                              }
-                            }}
-                            style={{
-                              cursor: "pointer",
-                              borderBottom: "1px solid #eee",
-                            }}
-                          >
-                            <Group gap={4} wrap="nowrap">
-                              {getColumnIcon(col.type, col.name)}
-                              <Text size="xs" fw={500} c="dimmed">
-                                {col.name}
-                              </Text>
-                              {sort === col.name && (
-                                <Text size="xs" c="dimmed">
-                                  {sortDir === "ASC" ? "↑" : "↓"}
-                                </Text>
-                              )}
-                            </Group>
-                          </Table.Th>
-                        ))}
-                        <Table.Th
-                          w={50}
-                          style={{ borderBottom: "1px solid #eee" }}
-                        ></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>{tableRows}</Table.Tbody>
-                    <Table.Tfoot>
-                      <Table.Tr>
-                        <Table.Td colSpan={columns.length + 2}>
-                          <Group justify="flex-end" gap="xs" mt="xs">
-                            <Text size="xs" c="dimmed">
-                              Page {page} of {Math.ceil(total / 50)} ({total}{" "}
-                              records)
-                            </Text>
-                            <ActionIcon
-                              variant="default"
-                              size="sm"
-                              disabled={page <= 1}
-                              onClick={() => setPage((p) => p - 1)}
-                            >
-                              <IconChevronLeft size={14} />
-                            </ActionIcon>
-                            <ActionIcon
-                              variant="default"
-                              size="sm"
-                              disabled={page >= Math.ceil(total / 50)}
-                              onClick={() => setPage((p) => p + 1)}
-                            >
-                              <IconChevronRight size={14} />
-                            </ActionIcon>
-                          </Group>
-                        </Table.Td>
-                      </Table.Tr>
-                    </Table.Tfoot>
-                  </Table>
-                </ScrollArea>
+                <>
+                  <DataGrid
+                    columns={columns}
+                    rows={filteredRows}
+                    pk={pk}
+                    selectedRows={selectedRows}
+                    onSelectRow={(pk, checked) => {
+                      const newSelected = new Set(selectedRows);
+                      if (checked) {
+                        newSelected.add(pk);
+                      } else {
+                        newSelected.delete(pk);
+                      }
+                      setSelectedRows(newSelected);
+                    }}
+                    onSelectAll={(checked) => {
+                      if (checked) {
+                        setSelectedRows(new Set(rows.map((r) => String(r[pk]))));
+                      } else {
+                        setSelectedRows(new Set());
+                      }
+                    }}
+                    onSort={(colName) => {
+                      if (sort === colName) {
+                        setSortDir((d) => (d === "ASC" ? "DESC" : "ASC"));
+                      } else {
+                        setSort(colName);
+                        setSortDir("ASC");
+                      }
+                    }}
+                    sort={sort}
+                    sortDir={sortDir}
+                    getColumnIcon={getColumnIcon}
+                    onDeleteRecord={deleteRecord}
+                    editingCell={editingCell}
+                    onStartEdit={(rowPk, column) => setEditingCell({ rowPk, column })}
+                    onUpdateCell={updateCell}
+                    onCancelEdit={() => setEditingCell(null)}
+                    fkMap={fkMap}
+                    API={API}
+                    currentTable={currentTable}
+                    getTagColor={getTagColor}
+                    isTagColumn={isTagColumn}
+                  />
+                  
+                  <Pagination
+                    page={page}
+                    total={total}
+                    onPageChange={setPage}
+                  />
+                </>
               )}
             </Box>
           </Box>
