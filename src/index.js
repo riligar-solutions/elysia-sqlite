@@ -1,6 +1,11 @@
 import { Elysia } from "elysia";
 import { Database } from "bun:sqlite";
 import { join } from "path";
+import { existsSync, readFileSync } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
+import { createSessionManager } from './core/session.js';
+import { authenticator } from 'otplib';
+import QRCode from 'qrcode';
 
 // Mapeamento de extensões para MIME types
 const mimeTypes = {
@@ -18,13 +23,212 @@ const mimeTypes = {
  * @param {Object} config - Configuração do plugin
  * @param {string} config.dbPath - Caminho para o arquivo do banco SQLite
  * @param {string} config.prefix - Prefixo da rota (ex: '/admin')
+ * @param {string} config.configPath - Caminho para o arquivo de configuração de auth (ex: './sqlite-admin-config.json')
  */
-export const sqliteAdmin = ({ dbPath, prefix = "/admin" }) => {
+export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-admin-config.json" }) => {
   const db = new Database(dbPath);
   const uiPath = join(import.meta.dir, "ui", "dist");
+  
+  // Gerenciador de Sessão
+  const sessionManager = createSessionManager();
+
+  // Carregar Configuração
+  let config = {};
+  const loadConfig = () => {
+    if (existsSync(configPath)) {
+      try {
+        config = JSON.parse(readFileSync(configPath, 'utf-8'));
+      } catch (e) {
+        console.error("Failed to load config", e);
+      }
+    }
+  };
+  loadConfig();
+
+  const saveConfig = async (newConfig) => {
+      config = { ...config, ...newConfig };
+      try {
+          await writeFile(configPath, JSON.stringify(config, null, 2));
+          return true;
+      } catch (e) {
+          console.error("Failed to save config", e);
+          return false;
+      }
+  };
+
+  const isConfigured = () => !!(config.username && config.password);
 
   return (
     new Elysia({ prefix })
+      // Middleware de Autenticação
+      .derive(({ headers }) => {
+          const cookies = headers.cookie || '';
+          const sessionMatch = cookies.match(/admin-session=([^;]+)/);
+          const token = sessionMatch ? sessionMatch[1] : null;
+          const session = sessionManager.get(token);
+          return { session };
+      })
+      .onBeforeHandle(({ path, set, session, body }) => {
+        // Permitir assets e HTML principal
+        if (path.includes('/assets/') || path === prefix || path === prefix + '/') return;
+        if (path.endsWith('index.html')) return;
+
+        // Rotas Públicas de API
+        if (path.endsWith('/auth/login') || path.endsWith('/auth/status') || path.endsWith('/auth/logout')) return;
+        
+        // Rota de Setup (só permitida se não configurado)
+        if (path.endsWith('/api/setup')) {
+            if (isConfigured()) {
+                set.status = 403;
+                return { success: false, error: "System already configured" };
+            }
+            return;
+        }
+
+        // Para todas as outras rotas /api/, exigir configuração e autenticação
+        if (path.includes('/api/')) {
+            if (!isConfigured()) {
+                set.status = 403;
+                return { success: false, error: "System not configured", code: "NOT_CONFIGURED" };
+            }
+
+            if (!session) {
+                set.status = 401;
+                return { success: false, error: "Unauthorized", code: "UNAUTHORIZED" };
+            }
+        }
+      })
+
+      // AUTH: Status
+      .get("/auth/status", ({ session }) => {
+          return {
+              configured: isConfigured(),
+              authenticated: !!session,
+              user: session?.username,
+              totpEnabled: !!config.totpSecret
+          };
+      })
+
+      // AUTH: Setup (Onboarding)
+      .post("/api/setup", async ({ body }) => {
+          if (isConfigured()) {
+              return { success: false, error: "Already configured" };
+          }
+          const { username, password } = body;
+          if (!username || !password) {
+              return { success: false, error: "Username and password required" };
+          }
+          
+          if (await saveConfig({ username, password })) {
+              // Criar sessão automaticamente
+              const { token, expiresAt } = sessionManager.create(username);
+              const expiresDate = new Date(expiresAt);
+              
+              return new Response(JSON.stringify({ success: true }), {
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Set-Cookie': `admin-session=${token}; Path=${prefix}; HttpOnly; SameSite=Lax; Expires=${expiresDate.toUTCString()}`
+                  }
+              });
+          }
+          return { success: false, error: "Failed to save config" };
+      })
+
+      // AUTH: Login
+      .post("/auth/login", ({ body, set }) => {
+          if (!isConfigured()) {
+              set.status = 403;
+              return { success: false, error: "Not configured" };
+          }
+          
+          const { username, password, totpCode } = body;
+          
+          if (username === config.username && password === config.password) {
+              // 2FA Verification
+              if (config.totpSecret) {
+                  if (!totpCode) {
+                      set.status = 401; // Require 2FA
+                      return { success: false, error: "2FA code required", code: "2FA_REQUIRED" };
+                  }
+                  
+                  const isValid = authenticator.check(totpCode, config.totpSecret);
+                  if (!isValid) {
+                      set.status = 401;
+                      return { success: false, error: "Invalid 2FA code" };
+                  }
+              }
+
+              const { token, expiresAt } = sessionManager.create(username);
+              const expiresDate = new Date(expiresAt);
+              
+              return new Response(JSON.stringify({ success: true }), {
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Set-Cookie': `admin-session=${token}; Path=${prefix}; HttpOnly; SameSite=Lax; Expires=${expiresDate.toUTCString()}`
+                  }
+              });
+          }
+          
+          set.status = 401;
+          return { success: false, error: "Invalid credentials" };
+      })
+
+      // AUTH: Logout
+      .post("/auth/logout", ({ session }) => {
+           return new Response(JSON.stringify({ success: true }), {
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Set-Cookie': `admin-session=; Path=${prefix}; HttpOnly; SameSite=Lax; Max-Age=0`
+                  }
+              });
+      })
+
+      // TOTP: Generate
+      .post("/api/totp/generate", async ({ session, set }) => {
+          if (!session) { set.status = 401; return; }
+          const secret = authenticator.generateSecret();
+          const otpauth = authenticator.keyuri(session.username, 'SQLite Admin', secret);
+          const qrCode = await QRCode.toDataURL(otpauth);
+          return { success: true, secret, qrCode };
+      })
+
+      // TOTP: Verify & Enable
+      .post("/api/totp/verify", async ({ body, session, set }) => {
+          if (!session) { set.status = 401; return; }
+          const { secret, code } = body;
+          
+          if (!authenticator.check(code, secret)) {
+              return { success: false, error: "Invalid code" };
+          }
+
+          if (await saveConfig({ totpSecret: secret })) {
+              return { success: true };
+          }
+          return { success: false, error: "Failed to save config" };
+      })
+
+      // TOTP: Disable
+      .post("/api/totp/disable", async ({ body, session, set }) => {
+          if (!session) { set.status = 401; return; }
+          const { code } = body; // Confirm with code before disabling
+          
+          if (!authenticator.check(code, config.totpSecret)) {
+             return { success: false, error: "Invalid code" };
+          }
+
+          // Remove secret
+          const newConfig = { ...config };
+          delete newConfig.totpSecret;
+          config = newConfig; // Local update
+          
+          try {
+              await writeFile(configPath, JSON.stringify(config, null, 2));
+              return { success: true };
+          } catch(e) {
+              return { success: false, error: "Failed to save" };
+          }
+      })
+
       // Servir index.html na raiz
       .get("/", async () => {
         const file = Bun.file(join(uiPath, "index.html"));

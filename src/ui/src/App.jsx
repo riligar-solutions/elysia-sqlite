@@ -74,6 +74,9 @@ import { useFilter } from "./hooks/useFilter";
 import { Filter } from "./components/Filter";
 import { ExportButton } from "./components/ExportButton";
 import { ButtonDelete } from "./components/HoldButton";
+import { Onboarding } from "./components/Onboarding";
+import { Login } from "./components/Login";
+import { SecuritySettings } from "./components/SecuritySettings";
 
 const API = "/admin/api";
 
@@ -119,6 +122,7 @@ const NewRecordModal = ({
   currentTable,
   onSuccess,
 }) => {
+    // ... (modal implementation)
   const [formData, setFormData] = useState({});
   const [fkOptionsMap, setFkOptionsMap] = useState({});
   const [loadingFk, setLoadingFk] = useState({});
@@ -259,12 +263,54 @@ const NewRecordModal = ({
   );
 };
 
+
 export default function App() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const dark = colorScheme === "dark";
 
+  // Auth State
+  const [auth, setAuth] = useState(null);
+
+  // Security Modal
+  const [securityOpened, { open: openSecurity, close: closeSecurity }] = useDisclosure(false);
+  
+  // ... (rest of checkAuth and useEffect)
+  const checkAuth = async () => {
+    try {
+      const res = await fetch("/admin/auth/status");
+      const data = await res.json();
+      setAuth(data);
+    } catch (e) {
+      console.error("Failed to check auth status", e);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/admin/auth/logout", { method: "POST" });
+      setAuth({ ...auth, authenticated: false, user: null });
+      notifications.show({
+          title: "Logged out",
+          message: "You have been successfully logged out",
+          color: "gray"
+      });
+    } catch (e) {
+      notifications.show({
+          title: "Error",
+          message: "Failed to logout",
+          color: "red"
+      });
+    }
+  };
+  
   // State
   const [tables, setTables] = useState([]);
+// ... (rest of App state)
+
   const [currentTable, setCurrentTable] = useState(null);
   const [columns, setColumns] = useState([]);
   const [rows, setRows] = useState([]);
@@ -470,8 +516,10 @@ export default function App() {
 
   // Load tables
   useEffect(() => {
-    loadTables();
-  }, []);
+    if (auth?.authenticated) {
+      loadTables();
+    }
+  }, [auth?.authenticated]);
 
   const loadTables = async () => {
     try {
@@ -1240,7 +1288,7 @@ export default function App() {
     </Table.Tr>
   ));
 
-  return (
+  const mainApp = (
     <AppShell navbar={{ width: 260, breakpoint: "sm" }} padding="md">
       <AppShell.Navbar
         p="xs"
@@ -1419,11 +1467,11 @@ export default function App() {
                     fontWeight: 600,
                   }}
                 >
-                  AD
+                  {auth?.user?.[0]?.toUpperCase() || "U"}
                 </Box>
                 <Box style={{ textAlign: "left" }}>
                   <Text size="sm" fw={500} lh={1.2}>
-                    Admin
+                    {auth?.user || "User"}
                   </Text>
                   <Text size="xs" c="dimmed" lh={1.2}>
                     sqlite@local
@@ -1444,7 +1492,7 @@ export default function App() {
             >
               Mode: {dark ? "Dark" : "Light"}
             </Menu.Item>
-            <Menu.Item leftSection={<IconSettings size={14} />}>
+            <Menu.Item leftSection={<IconSettings size={14} />} onClick={openSecurity}>
               Settings
             </Menu.Item>
             <Menu.Item leftSection={<IconDeviceLaptop size={14} />}>
@@ -1453,7 +1501,7 @@ export default function App() {
 
             <Menu.Divider />
 
-            <Menu.Item color="red" leftSection={<IconLogout size={14} />}>
+            <Menu.Item color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
               Logout
             </Menu.Item>
           </Menu.Dropdown>
@@ -1461,7 +1509,12 @@ export default function App() {
       </AppShell.Navbar>
 
       <AppShell.Main>
+        <SecuritySettings opened={securityOpened} onClose={closeSecurity} />
         {sqlMode ? (
+
+            // ... (rest of AppShell content)
+
+            
           // SQL MODE LAYOUT
           <Box p="xl" style={{ maxWidth: 900, margin: "0 auto" }}>
             <Group mb="xl" gap="sm">
@@ -2424,4 +2477,23 @@ export default function App() {
       </Modal>
     </AppShell>
   );
+
+  // AUTH RENDERING
+  if (!auth) {
+    return (
+      <Center h="100vh">
+        <Loader color="dark" type="dots" size="xl" />
+      </Center>
+    );
+  }
+
+  if (!auth.configured) {
+    return <Onboarding onConfigured={checkAuth} />;
+  }
+
+  if (!auth.authenticated) {
+    return <Login onLogin={checkAuth} />;
+  }
+
+  return mainApp;
 }
