@@ -1,21 +1,61 @@
 {
-  "name": "elysia-sqlite-admin",
+  "name": "@riligar/elysia-sqlite",
   "version": "0.1.0",
   "description": "Plugin ElysiaJS para gerenciamento de bancos de dados SQLite",
   "type": "module",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/riligar-solutions/elysia-sqlite.git"
+  },
+  "homepage": "https://github.com/riligar-solutions/elysia-sqlite#readme",
+  "bugs": {
+    "url": "https://github.com/riligar-solutions/elysia-sqlite/issues"
+  },
+  "keywords": [
+    "elysia",
+    "sqlite",
+    "admin",
+    "database",
+    "bun"
+  ],
+  "author": {
+    "name": "Ciro Cesar Maciel",
+    "url": "https://github.com/ciro-maciel"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "bun run --watch demo/index.js",
     "dev:all": "bun run dev & bun run dev:ui",
     "dev:ui": "cd src/ui && bun run dev",
     "build:ui": "cd src/ui && bun run build"
   },
+  "peerDependencies": {
+    "elysia": ">=1.0.0"
+  },
   "dependencies": {
     "@elysiajs/static": "^1.2.0",
-    "elysia": "^1.2.25",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "elysia": "^1.2.25",
+    "semantic-release": "^24.2.9",
     "vite": "^6.0.7"
   }
 }
