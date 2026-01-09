@@ -27,18 +27,16 @@ bun add @riligar/elysia-sqlite
 ### Peer Dependencies
 
 ```bash
-bun add elysia @elysiajs/static
+bun add elysia
 ```
 
 ## 🚀 Quick Start
 
 ```javascript
 import { Elysia } from 'elysia'
-import { staticPlugin } from '@elysiajs/static'
 import { sqliteAdmin } from '@riligar/elysia-sqlite'
 
 const app = new Elysia()
-    .use(staticPlugin())
     .use(
         sqliteAdmin({
             dbPath: 'demo.db',
