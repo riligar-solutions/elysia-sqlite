@@ -1,8 +1,8 @@
 # Plan: Browse Data View
 
 ## Phase 1: Backend API
-- [ ] Task: Create endpoint to list all database tables.
-- [ ] Task: Create endpoint for paginated row retrieval for a specific table.
+- [x] Task: Create endpoint to list all database tables. [09cd828]
+- [x] Task: Create endpoint for paginated row retrieval for a specific table. [09cd828]
 - [ ] Task: Conductor - User Manual Verification 'Backend API' (Protocol in workflow.md)
 
 ## Phase 2: Frontend Implementation
