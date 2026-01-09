@@ -12,7 +12,7 @@ A minimalist, web-based SQLite administration plugin for ElysiaJS applications. 
 - **Technical Stakeholders:** Performing data audits and exports (CSV/JSON) without requiring CLI expertise.
 
 ## Core Features
-- **Data Management:** Full CRUD operations (Create, Read, Update, Delete) for table rows.
+- **Data Management:** Full CRUD operations (Create, Read, Update, Delete) for table rows with paginated data browsing.
 - **Schema Inspection:** Detailed view of table structures, indexes, and database relationships.
 - **Data Portability:** Robust tools for exporting data to CSV/JSON and importing from external files.
 - **Flexible Security:** 
