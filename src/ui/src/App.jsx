@@ -28,6 +28,7 @@ import {
   Title,
   ThemeIcon,
   HoverCard,
+  Switch,
 } from "@mantine/core";
 import { useDisclosure, useHotkeys, useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -1485,18 +1486,23 @@ export default function App() {
           <Menu.Dropdown>
             <Menu.Label>Application</Menu.Label>
             <Menu.Item
-              leftSection={
-                dark ? <IconSun size={14} /> : <IconMoon size={14} />
-              }
+              closeMenuOnClick={false}
               onClick={() => toggleColorScheme()}
+              rightSection={
+                <Switch
+                  checked={dark}
+                  size="sm"
+                  onLabel={<IconMoon size={12} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
+                  offLabel={<IconSun size={12} stroke={2.5} color="var(--mantine-color-gray-6)" />}
+                  readOnly
+                  style={{ pointerEvents: "none" }}
+                />
+              }
             >
-              Mode: {dark ? "Dark" : "Light"}
+              Dark Mode
             </Menu.Item>
             <Menu.Item leftSection={<IconSettings size={14} />} onClick={openSecurity}>
               Settings
-            </Menu.Item>
-            <Menu.Item leftSection={<IconDeviceLaptop size={14} />}>
-              Shortcuts
             </Menu.Item>
 
             <Menu.Divider />

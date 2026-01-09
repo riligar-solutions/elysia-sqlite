@@ -52,21 +52,33 @@ body {
   border-collapse: collapse;
 }
 
-.mantine-Table-thead {
+.mantine-Table-thead tr th {
   border-bottom: 1px solid #e5e7eb !important;
+  font-weight: 500;
+  font-size: 12px;
+  color: #687076; /* Secondary text */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.mantine-Table-tr {
+.mantine-Table-tbody tr td {
+  font-size: 13px;
+  color: #11181C;
   border-bottom: 1px solid #f3f4f6;
-  transition: background-color 0.1s ease;
+  padding: 8px 16px !important;
 }
 
-.mantine-Table-tr:last-child {
-  border-bottom: none;
+.mantine-Table-tbody tr[data-hover]:hover {
+  background-color: #F9FAFB;
 }
 
-.mantine-Table-td {
-  padding: 8px 16px !important; /* Increased padding slightly for readability */
+[data-mantine-color-scheme="dark"] .mantine-Table-tbody tr td {
+  color: #C1C2C5;
+  border-bottom-color: #2C2E33;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Table-tbody tr[data-hover]:hover {
+  background-color: #25262B;
 }
 
 /* Editable Cell */
@@ -80,4 +92,32 @@ body {
 .editable-cell:hover {
   background-color: #f3f4f6;
   color: #000000;
+}
+
+/* NavLink Styles */
+.mantine-NavLink-root {
+  color: #687076;
+  transition: all 0.2s ease;
+}
+
+.mantine-NavLink-root:hover {
+  background-color: #F9FAFB;
+}
+
+.mantine-NavLink-root[data-active] {
+  background-color: #F3F4F6;
+  color: #11181C;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-NavLink-root {
+  color: #909296;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-NavLink-root:hover {
+  background-color: #25262B;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-NavLink-root[data-active] {
+  background-color: #2C2E33;
+  color: #FFFFFF;
 }

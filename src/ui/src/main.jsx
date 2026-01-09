@@ -64,24 +64,6 @@ const theme = createTheme({
         withColumnBorders: false,
         verticalSpacing: "sm",
       },
-      styles: {
-        th: {
-          fontWeight: 500,
-          fontSize: "12px",
-          color: "#687076", // Secondary text
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-        },
-        td: {
-          fontSize: "13px",
-          color: "#11181C",
-        },
-        tr: {
-          "&[data-hover]": {
-            backgroundColor: "#F9FAFB",
-          },
-        },
-      },
     },
     TextInput: {
       styles: {
@@ -117,14 +99,6 @@ const theme = createTheme({
         root: {
           borderRadius: 6,
           fontWeight: 500,
-          color: "#687076",
-          "&[data-active]": {
-            backgroundColor: "#F3F4F6",
-            color: "#11181C",
-          },
-          "&:hover": {
-            backgroundColor: "#F9FAFB",
-          },
         },
       },
     },

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --watch demo/index.js",
+    "dev:all": "bun run dev & bun run dev:ui",
     "dev:ui": "cd src/ui && bun run dev",
     "build:ui": "cd src/ui && bun run build"
   },
