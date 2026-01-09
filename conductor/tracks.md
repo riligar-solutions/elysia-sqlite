@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [ ] Track: Implement a basic "Browse Data" view
+## [~] Track: Implement a basic "Browse Data" view
 *Link: [./conductor/tracks/browse_data_20260109/](./conductor/tracks/browse_data_20260109/)*
