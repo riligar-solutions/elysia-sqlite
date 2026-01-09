@@ -16,7 +16,7 @@ Create a professional README.md for the `@riligar/elysia-sqlite` package based o
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Drafting' (Protocol in workflow.md) [checkpoint: 11dda11]
 
 ## Phase 3: Finalization & Review
-- [ ] Task: Verify all links (RiLiGar website, GitHub repo, Issues).
+- [x] Task: Verify all links (RiLiGar website, GitHub repo, Issues).
 - [ ] Task: Run a markdown lint check (if applicable) or manual proofread for tone consistency.
 - [ ] Task: Final file generation/update of `README.md`.
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Finalization' (Protocol in workflow.md)
