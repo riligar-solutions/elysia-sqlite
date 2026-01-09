@@ -52,3 +52,27 @@ console.log('📊 Admin Dashboard at http://localhost:3000/admin')
 ```
 
 On first run, navigate to `/admin` (or your configured prefix) to start the onboarding wizard and configure your admin credentials.
+
+## ⚙️ Configuration
+
+### Plugin Options
+
+These options are passed to the `sqliteAdmin` plugin at initialization.
+
+| Option       | Type   | Default                       | Description                                                     |
+| ------------ | ------ | ----------------------------- | --------------------------------------------------------------- |
+| `dbPath`     | string | **Required**                  | Path to the SQLite database file                                |
+| `prefix`     | string | `"/admin"`                    | URL prefix for the admin dashboard and API                      |
+| `configPath` | string | `"./sqlite-admin-config.json"`| Path to save the runtime authentication config (JSON)           |
+
+### Runtime Configuration (via UI)
+
+The following settings are managed via the **Settings** tab in the dashboard and stored in the JSON file defined by `configPath`.
+
+| Option            | Description                                              |
+| ----------------- | -------------------------------------------------------- |
+| `username`        | Admin username for accessing the dashboard               |
+| `password`        | Admin password (stored in plain text in config file - protect this file!) |
+| `totpSecret`      | Secret key for Two-Factor Authentication (managed automatically) |
+
+> **Note:** The configuration file contains sensitive credentials. Ensure it is included in your `.gitignore` if necessary or secured appropriately in production environments.

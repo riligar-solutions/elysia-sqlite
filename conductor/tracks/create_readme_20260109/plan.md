@@ -11,7 +11,7 @@ Create a professional README.md for the `@riligar/elysia-sqlite` package based o
 - [x] Task: Create Header section with RiLiGar branding and dynamic badges (NPM, License).
 - [x] Task: Write the Features section, highlighting Smart DataGrid, Secure Admin, Zero Config, and Export options.
 - [x] Task: Compose the Installation and Quick Start section with accurate code examples and peer dependency list.
-- [ ] Task: Build the Configuration tables for both plugin options and runtime settings.
+- [x] Task: Build the Configuration tables for both plugin options and runtime settings.
 - [ ] Task: Outline the API Endpoints (Pages, Auth, Data Operations).
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Drafting' (Protocol in workflow.md)
 
