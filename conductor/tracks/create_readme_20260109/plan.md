@@ -4,8 +4,8 @@ Create a professional README.md for the `@riligar/elysia-sqlite` package based o
 
 ## Phase 1: Preparation & Information Gathering
 - [x] Task: Audit current project structure and source code (src/index.js, src/ui/src/components) to ensure all features and config options are accurately listed.
-- [ ] Task: Identify all plugin configuration options (props) from the main entry point.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Preparation' (Protocol in workflow.md)
+- [x] Task: Identify all plugin configuration options (props) from the main entry point.
+- [ ] Task: Conductor - User Manual Verification 'Phase 1: Preparation' (Protocol in workflow.md) [checkpoint: 4c7e8ca]
 
 ## Phase 2: Drafting Content
 - [ ] Task: Create Header section with RiLiGar branding and dynamic badges (NPM, License).
