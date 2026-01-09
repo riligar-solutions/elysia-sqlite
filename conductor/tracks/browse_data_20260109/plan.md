@@ -1,9 +1,9 @@
 # Plan: Browse Data View
 
-## Phase 1: Backend API
+## Phase 1: Backend API [checkpoint: 2a52158]
 - [x] Task: Create endpoint to list all database tables. [09cd828]
 - [x] Task: Create endpoint for paginated row retrieval for a specific table. [09cd828]
-- [ ] Task: Conductor - User Manual Verification 'Backend API' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Backend API' (Protocol in workflow.md) [2a52158]
 
 ## Phase 2: Frontend Implementation
 - [ ] Task: Implement `TableSelector` component.
