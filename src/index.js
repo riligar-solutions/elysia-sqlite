@@ -263,6 +263,32 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
         return { tables: tables.map((t) => t.name) };
       })
 
+      // Lista linhas de uma tabela com paginação
+      .get("/api/table/:name/rows", ({ params, query }) => {
+        try {
+          const page = parseInt(query.page) || 1;
+          const limit = parseInt(query.limit) || 50;
+          const offset = (page - 1) * limit;
+          
+          const rows = db.query(`SELECT * FROM ${params.name} LIMIT ${limit} OFFSET ${offset}`).all();
+          const countResult = db.query(`SELECT COUNT(*) as count FROM ${params.name}`).get();
+          const total = countResult.count;
+          
+          return {
+            success: true,
+            rows,
+            pagination: {
+              page,
+              limit,
+              total,
+              totalPages: Math.ceil(total / limit)
+            }
+          };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      })
+
       // Executa query SQL arbitrária
       .post("/api/query", ({ body }) => {
         try {
