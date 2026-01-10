@@ -42,7 +42,7 @@
     "dev:all": "bun run dev & bun run dev:ui",
     "dev:ui": "cd src/ui && bun run dev",
     "build:ui": "cd src/ui && bun run build",
-    "prepublishOnly": "bun run build:ui"
+    "prepublishOnly": "cd src/ui && bun install && bun run build"
   },
   "peerDependencies": {
     "elysia": ">=1.0.0"
