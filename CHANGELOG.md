@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.6.0...v1.7.0) (2026-01-10)
+
+
+### Features
+
+* Rename config file and update README ([b765571](https://github.com/riligar-solutions/elysia-sqlite/commit/b7655711b72de89a6ba1d36f2b4b528f41205585))
+
 # [1.6.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.5.2...v1.6.0) (2026-01-10)
 
 
