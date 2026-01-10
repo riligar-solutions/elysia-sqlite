@@ -35,7 +35,7 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
   // Se configPath não for especificado, deriva do diretório do banco de dados
   // Isso garante que a configuração fique no mesmo volume persistente do banco
   const resolvedConfigPath = configPath
-    ? resolve(configPath)
+    ? join(configPath, "sqlite-config.json")
     : join(dirname(absoluteDbPath), "sqlite-config.json");
 
   // Gerenciador de Sessão
