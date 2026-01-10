@@ -13,7 +13,7 @@ bun run start
 ## Acessar
 
 - **Página inicial:** http://localhost:3000
-- **Painel Admin:** http://localhost:3000/admin
+- **Painel Admin:** http://localhost:3000/sqlite
 
 ## Banco de Dados
 

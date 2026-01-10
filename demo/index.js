@@ -4,7 +4,7 @@
  */
 
 import { Elysia } from "elysia";
-import { rateLimit } from 'elysia-rate-limit';
+import { rateLimit } from "elysia-rate-limit";
 import { sqliteAdmin } from "../src/index.js";
 import { Database } from "bun:sqlite";
 import { join } from "path";
@@ -130,9 +130,11 @@ console.log("   📋 Tabelas: clientes, produtos, pedidos, categorias\n");
 // ============================================
 
 const app = new Elysia()
-  .use(rateLimit({
-    exclude: ['/admin', '/admin/*']
-  }))
+  .use(
+    rateLimit({
+      exclude: ["/sqlite", "/sqlite/*"],
+    })
+  )
   // Página inicial com instruções
   .get("/", () => {
     return new Response(
@@ -260,7 +262,7 @@ const app = new Elysia()
               <div class="table-item"><i class="ti ti-tag"></i> categorias</div>
             </div>
           </div>
-          <a href="/admin/" class="btn">
+          <a href="/sqlite/" class="btn">
             <i class="ti ti-external-link"></i>
             Abrir Painel Admin
           </a>
@@ -279,12 +281,12 @@ const app = new Elysia()
   })
 
   // Plugin SQLite
-  .use(sqliteAdmin({ dbPath: DB_PATH, prefix: "/admin" }))
+  .use(sqliteAdmin({ dbPath: DB_PATH, prefix: "/sqlite" }))
 
   .listen(3000);
 
 console.log("🚀 Demo rodando em: http://localhost:3000");
-console.log("📊 Painel Admin em: http://localhost:3000/admin\n");
+console.log("📊 Painel Admin em: http://localhost:3000/sqlite\n");
 console.log("💡 Dica: Experimente consultas SQL como:");
 console.log("   SELECT * FROM clientes");
 console.log("   SELECT * FROM produtos WHERE preco > 5000");
