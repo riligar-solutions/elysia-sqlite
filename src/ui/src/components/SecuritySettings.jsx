@@ -42,7 +42,7 @@ export function SecuritySettings({ opened, onClose }) {
   const loadStatus = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/admin/auth/status");
+      const res = await fetch("/sqlite/auth/status");
       const data = await res.json();
       setStatus(data);
     } catch (e) {
@@ -58,7 +58,7 @@ export function SecuritySettings({ opened, onClose }) {
   const startSetup = async () => {
     setSetupStep(1); // generating
     try {
-      const res = await fetch("/admin/api/totp/generate", { method: "POST" });
+      const res = await fetch("/sqlite/api/totp/generate", { method: "POST" });
       const data = await res.json();
       if (data.success) {
         setQrData(data);
@@ -80,7 +80,7 @@ export function SecuritySettings({ opened, onClose }) {
     if (!verifyCode) return;
     setVerifying(true);
     try {
-      const res = await fetch("/admin/api/totp/verify", {
+      const res = await fetch("/sqlite/api/totp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ secret: qrData.secret, code: verifyCode }),
@@ -119,7 +119,7 @@ export function SecuritySettings({ opened, onClose }) {
     if (!code) return;
 
     try {
-      const res = await fetch("/admin/api/totp/disable", {
+      const res = await fetch("/sqlite/api/totp/disable", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),

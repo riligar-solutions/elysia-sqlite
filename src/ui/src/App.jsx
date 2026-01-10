@@ -82,7 +82,7 @@ import { TableSelector } from "./components/TableSelector";
 import { DataGrid } from "./components/DataGrid";
 import { Pagination } from "./components/Pagination";
 
-const API = "/admin/api";
+const API = "/sqlite/api";
 
 // Column type icon mapping
 const getColumnIcon = (type, name) => {
@@ -281,7 +281,7 @@ export default function App() {
   // ... (rest of checkAuth and useEffect)
   const checkAuth = async () => {
     try {
-      const res = await fetch("/admin/auth/status");
+      const res = await fetch("/sqlite/auth/status");
       const data = await res.json();
       setAuth(data);
     } catch (e) {
@@ -295,7 +295,7 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/admin/auth/logout", { method: "POST" });
+      await fetch("/sqlite/auth/logout", { method: "POST" });
       setAuth({ ...auth, authenticated: false, user: null });
       notifications.show({
           title: "Logged out",

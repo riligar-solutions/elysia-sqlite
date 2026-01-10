@@ -33,7 +33,7 @@ export function Onboarding({ onConfigured }) {
 
     setLoading(true);
     try {
-      const response = await fetch("/admin/api/setup", {
+      const response = await fetch("/sqlite/api/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
