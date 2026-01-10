@@ -22,11 +22,11 @@ const mimeTypes = {
  * Plugin de administração SQLite para ElysiaJS
  * @param {Object} config - Configuração do plugin
  * @param {string} config.dbPath - Caminho para o arquivo do banco SQLite
- * @param {string} config.prefix - Prefixo da rota (ex: '/sqlite')
  * @param {string} config.configPath - Caminho para o arquivo de configuração de auth.
  *   Se não especificado, será salvo no mesmo diretório do banco de dados (recomendado para persistência em ambientes cloud como Fly.io)
  */
-export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
+export const sqliteAdmin = ({ dbPath, configPath }) => {
+  const prefix = "/sqlite";
   // Resolver para caminho absoluto para garantir consistência entre reinicializações
   const absoluteDbPath = resolve(dbPath);
   const db = new Database(absoluteDbPath);
