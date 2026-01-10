@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.5.0...v1.5.1) (2026-01-10)
+
+
+### Bug Fixes
+
+* Atualiza rotas do frontend para usar prefixo /sqlite ([258f60c](https://github.com/riligar-solutions/elysia-sqlite/commit/258f60cf066540e9ff3148b5b8d61753a69d3694))
+
 # [1.5.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.4.0...v1.5.0) (2026-01-10)
 
 
