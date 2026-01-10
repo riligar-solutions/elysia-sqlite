@@ -283,10 +283,11 @@ const app = new Elysia()
   // Plugin SQLite
   .use(sqliteAdmin({ dbPath: DB_PATH, prefix: "/sqlite" }))
 
-  .listen(3000);
+  .listen(process.env.PORT || 3000);
 
-console.log("🚀 Demo rodando em: http://localhost:3000");
-console.log("📊 Painel Admin em: http://localhost:3000/sqlite\n");
+const port = process.env.PORT || 3000;
+console.log(`🚀 Demo rodando em: http://localhost:${port}`);
+console.log(`📊 Painel Admin em: http://localhost:${port}/sqlite\n`);
 console.log("💡 Dica: Experimente consultas SQL como:");
 console.log("   SELECT * FROM clientes");
 console.log("   SELECT * FROM produtos WHERE preco > 5000");

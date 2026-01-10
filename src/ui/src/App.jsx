@@ -83,6 +83,7 @@ import { DataGrid } from "./components/DataGrid";
 import { Pagination } from "./components/Pagination";
 
 const API = "/sqlite/api";
+const AUTH = "/sqlite/auth";
 
 // Column type icon mapping
 const getColumnIcon = (type, name) => {
@@ -126,7 +127,7 @@ const NewRecordModal = ({
   currentTable,
   onSuccess,
 }) => {
-    // ... (modal implementation)
+  // ... (modal implementation)
   const [formData, setFormData] = useState({});
   const [fkOptionsMap, setFkOptionsMap] = useState({});
   const [loadingFk, setLoadingFk] = useState({});
@@ -267,7 +268,6 @@ const NewRecordModal = ({
   );
 };
 
-
 export default function App() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const dark = colorScheme === "dark";
@@ -276,12 +276,13 @@ export default function App() {
   const [auth, setAuth] = useState(null);
 
   // Security Modal
-  const [securityOpened, { open: openSecurity, close: closeSecurity }] = useDisclosure(false);
-  
+  const [securityOpened, { open: openSecurity, close: closeSecurity }] =
+    useDisclosure(false);
+
   // ... (rest of checkAuth and useEffect)
   const checkAuth = async () => {
     try {
-      const res = await fetch("/sqlite/auth/status");
+      const res = await fetch(`${AUTH}/status`);
       const data = await res.json();
       setAuth(data);
     } catch (e) {
@@ -295,25 +296,25 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/sqlite/auth/logout", { method: "POST" });
+      await fetch(`${AUTH}/logout`, { method: "POST" });
       setAuth({ ...auth, authenticated: false, user: null });
       notifications.show({
-          title: "Logged out",
-          message: "You have been successfully logged out",
-          color: "gray"
+        title: "Logged out",
+        message: "You have been successfully logged out",
+        color: "gray",
       });
     } catch (e) {
       notifications.show({
-          title: "Error",
-          message: "Failed to logout",
-          color: "red"
+        title: "Error",
+        message: "Failed to logout",
+        color: "red",
       });
     }
   };
-  
+
   // State
   const [tables, setTables] = useState([]);
-// ... (rest of App state)
+  // ... (rest of App state)
 
   const [currentTable, setCurrentTable] = useState(null);
   const [columns, setColumns] = useState([]);
@@ -1075,7 +1076,7 @@ export default function App() {
 
         <Divider my="sm" color="#E8E5E0" />
 
-        <TableSelector 
+        <TableSelector
           tables={tables}
           favorites={favorites}
           currentTable={currentTable}
@@ -1140,8 +1141,20 @@ export default function App() {
                 <Switch
                   checked={dark}
                   size="sm"
-                  onLabel={<IconMoon size={12} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
-                  offLabel={<IconSun size={12} stroke={2.5} color="var(--mantine-color-gray-6)" />}
+                  onLabel={
+                    <IconMoon
+                      size={12}
+                      stroke={2.5}
+                      color="var(--mantine-color-yellow-4)"
+                    />
+                  }
+                  offLabel={
+                    <IconSun
+                      size={12}
+                      stroke={2.5}
+                      color="var(--mantine-color-gray-6)"
+                    />
+                  }
                   readOnly
                   style={{ pointerEvents: "none" }}
                 />
@@ -1149,13 +1162,20 @@ export default function App() {
             >
               Dark Mode
             </Menu.Item>
-            <Menu.Item leftSection={<IconSettings size={14} />} onClick={openSecurity}>
+            <Menu.Item
+              leftSection={<IconSettings size={14} />}
+              onClick={openSecurity}
+            >
               Settings
             </Menu.Item>
 
             <Menu.Divider />
 
-            <Menu.Item color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
+            <Menu.Item
+              color="red"
+              leftSection={<IconLogout size={14} />}
+              onClick={handleLogout}
+            >
               Logout
             </Menu.Item>
           </Menu.Dropdown>
@@ -1165,10 +1185,8 @@ export default function App() {
       <AppShell.Main>
         <SecuritySettings opened={securityOpened} onClose={closeSecurity} />
         {sqlMode ? (
+          // ... (rest of AppShell content)
 
-            // ... (rest of AppShell content)
-
-            
           // SQL MODE LAYOUT
           <Box p="xl" style={{ maxWidth: 900, margin: "0 auto" }}>
             <Group mb="xl" gap="sm">
@@ -1757,7 +1775,9 @@ export default function App() {
                     }}
                     onSelectAll={(checked) => {
                       if (checked) {
-                        setSelectedRows(new Set(rows.map((r) => String(r[pk]))));
+                        setSelectedRows(
+                          new Set(rows.map((r) => String(r[pk])))
+                        );
                       } else {
                         setSelectedRows(new Set());
                       }
@@ -1775,7 +1795,9 @@ export default function App() {
                     getColumnIcon={getColumnIcon}
                     onDeleteRecord={deleteRecord}
                     editingCell={editingCell}
-                    onStartEdit={(rowPk, column) => setEditingCell({ rowPk, column })}
+                    onStartEdit={(rowPk, column) =>
+                      setEditingCell({ rowPk, column })
+                    }
                     onUpdateCell={updateCell}
                     onCancelEdit={() => setEditingCell(null)}
                     fkMap={fkMap}
@@ -1784,7 +1806,7 @@ export default function App() {
                     getTagColor={getTagColor}
                     isTagColumn={isTagColumn}
                   />
-                  
+
                   <Pagination
                     page={page}
                     total={total}
