@@ -66,6 +66,11 @@ test
 .releaserc.json
 bun.lock
 
-# UI Source cleaning (optional but good for package size)
-src/ui/node_modules
-src/ui/src
+# UI Source cleaning - IGNORE EVERYTHING EXCEPT dist
+src/ui/node_modules/
+src/ui/src/
+src/ui/bun.lock
+src/ui/package.json
+src/ui/vite.config.js
+src/ui/postcss.config.cjs
+src/ui/index.html
