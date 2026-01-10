@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { Database } from "bun:sqlite";
 import { join } from "path";
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { createSessionManager } from './core/session.js';
 import { authenticator } from 'otplib';
@@ -188,6 +188,20 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
                       'Set-Cookie': `admin-session=; Path=${prefix}; HttpOnly; SameSite=Lax; Max-Age=0`
                   }
               });
+      })
+
+      // DEBUG: List files in UI path
+      .get("/api/debug/files", () => {
+        try {
+            const files = readdirSync(uiPath);
+            const assetsPath = join(uiPath, 'assets');
+            const assets = existsSync(assetsPath) 
+                ? readdirSync(assetsPath) 
+                : 'Assets folder missing';
+            return { uiPath, files, assets };
+        } catch (e) {
+            return { error: e.message, stack: e.stack, uiPath };
+        }
       })
 
       // TOTP: Generate
