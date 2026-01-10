@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.2.2...v1.3.0) (2026-01-10)
+
+
+### Features
+
+* add rate-limit to demo and ignore .db files ([acac158](https://github.com/riligar-solutions/elysia-sqlite/commit/acac1589f5d058fb170b0acede15bfd0c980c930))
+* Persist config file alongside database by default ([eca968c](https://github.com/riligar-solutions/elysia-sqlite/commit/eca968c467e76087761431906942a5f10c3c4a37))
+
 ## [1.2.2](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.2.1...v1.2.2) (2026-01-10)
 
 
