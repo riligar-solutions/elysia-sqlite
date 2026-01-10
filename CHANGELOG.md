@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.0...v1.1.1) (2026-01-10)
+
+
+### Bug Fixes
+
+* ensure UI build artifacts are published ([15f432c](https://github.com/riligar-solutions/elysia-sqlite/commit/15f432c8e86dff178ed19bf5d99664a3a0270ca9))
+
 # [1.1.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.0.0...v1.1.0) (2026-01-09)
 
 
