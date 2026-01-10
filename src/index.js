@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { Database } from "bun:sqlite";
-import { join } from "path";
+import { join, dirname } from "path";
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { createSessionManager } from './core/session.js';
@@ -23,11 +23,16 @@ const mimeTypes = {
  * @param {Object} config - Configuração do plugin
  * @param {string} config.dbPath - Caminho para o arquivo do banco SQLite
  * @param {string} config.prefix - Prefixo da rota (ex: '/admin')
- * @param {string} config.configPath - Caminho para o arquivo de configuração de auth (ex: './sqlite-admin-config.json')
+ * @param {string} config.configPath - Caminho para o arquivo de configuração de auth.
+ *   Se não especificado, será salvo no mesmo diretório do banco de dados (recomendado para persistência em ambientes cloud como Fly.io)
  */
-export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-admin-config.json" }) => {
+export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath }) => {
   const db = new Database(dbPath);
   const uiPath = join(import.meta.dir, "ui", "dist");
+
+  // Se configPath não for especificado, deriva do diretório do banco de dados
+  // Isso garante que a configuração fique no mesmo volume persistente do banco
+  const resolvedConfigPath = configPath || join(dirname(dbPath), "sqlite-admin-config.json");
   
   // Gerenciador de Sessão
   const sessionManager = createSessionManager();
@@ -35,9 +40,9 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
   // Carregar Configuração
   let config = {};
   const loadConfig = () => {
-    if (existsSync(configPath)) {
+    if (existsSync(resolvedConfigPath)) {
       try {
-        config = JSON.parse(readFileSync(configPath, 'utf-8'));
+        config = JSON.parse(readFileSync(resolvedConfigPath, 'utf-8'));
       } catch (e) {
         console.error("Failed to load config", e);
       }
@@ -48,7 +53,7 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
   const saveConfig = async (newConfig) => {
       config = { ...config, ...newConfig };
       try {
-          await writeFile(configPath, JSON.stringify(config, null, 2));
+          await writeFile(resolvedConfigPath, JSON.stringify(config, null, 2));
           return true;
       } catch (e) {
           console.error("Failed to save config", e);
@@ -241,7 +246,7 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
           config = newConfig; // Local update
           
           try {
-              await writeFile(configPath, JSON.stringify(config, null, 2));
+              await writeFile(resolvedConfigPath, JSON.stringify(config, null, 2));
               return { success: true };
           } catch(e) {
               return { success: false, error: "Failed to save" };

@@ -61,7 +61,7 @@ These options are passed to the `sqliteAdmin` plugin at initialization.
 | ------------ | ------ | ----------------------------- | --------------------------------------------------------------- |
 | `dbPath`     | string | **Required**                  | Path to the SQLite database file                                |
 | `prefix`     | string | `"/admin"`                    | URL prefix for the admin dashboard and API                      |
-| `configPath` | string | `"./sqlite-admin-config.json"`| Path to save the runtime authentication config (JSON)           |
+| `configPath` | string | Same directory as `dbPath`    | Path to save the runtime authentication config (JSON). Defaults to `sqlite-admin-config.json` in the same directory as your database file |
 
 ### Runtime Configuration (via UI)
 
@@ -74,6 +74,29 @@ The following settings are managed via the **Settings** tab in the dashboard and
 | `totpSecret`      | Secret key for Two-Factor Authentication (managed automatically) |
 
 > **Note:** The configuration file contains sensitive credentials. Ensure it is included in your `.gitignore` if necessary or secured appropriately in production environments.
+
+### Cloud Deployment (Fly.io, Railway, etc.)
+
+When deploying to cloud platforms with ephemeral filesystems, ensure your database and config files are stored on a **persistent volume**.
+
+**Fly.io Example:**
+
+```toml
+# fly.toml
+[mounts]
+  source = "data"
+  destination = "/data"
+```
+
+```javascript
+// Your app
+sqliteAdmin({
+    dbPath: '/data/app.db',
+    // configPath automatically uses /data/sqlite-admin-config.json
+})
+```
+
+The config file is automatically stored alongside your database, so both will persist across deployments when using the same volume.
 
 ## 🔌 API Endpoints
 
