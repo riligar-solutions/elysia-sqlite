@@ -245,8 +245,13 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
       .get("/assets/*", async ({ params }) => {
         const filePath = join(uiPath, "assets", params["*"]);
         const file = Bun.file(filePath);
-        if (!(await file.exists()))
-          return new Response("Not found", { status: 404 });
+        const exists = await file.exists();
+        
+        if (!exists) {
+            console.log(`[SQLite Admin] Asset not found: ${filePath}`);
+            return new Response("Not found", { status: 404 });
+        }
+            
         const ext = filePath.substring(filePath.lastIndexOf("."));
         return new Response(file, {
           headers: {
