@@ -28,7 +28,6 @@ const mimeTypes = {
 export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-admin-config.json" }) => {
   const db = new Database(dbPath);
   const uiPath = join(import.meta.dir, "ui", "dist");
-  console.log("[SQLite Admin] UI Path:", uiPath);
   
   // Gerenciador de Sessão
   const sessionManager = createSessionManager();
@@ -61,9 +60,6 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
 
   return (
     new Elysia({ prefix })
-      .onRequest(({ request }) => {
-          console.log(`[SQLite Admin] Incoming Request: ${request.url}`);
-      })
       // Middleware de Autenticação
       .derive(({ headers }) => {
           const cookies = headers.cookie || '';
@@ -272,7 +268,6 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
         const exists = await file.exists();
         
         if (!exists) {
-            console.log(`[SQLite Admin] Asset not found: ${filePath}`);
             return new Response("Not found", { status: 404 });
         }
             
