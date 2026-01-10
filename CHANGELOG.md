@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.2.0...v1.2.1) (2026-01-10)
+
+
+### Bug Fixes
+
+* add global request logger for debugging ([06267bb](https://github.com/riligar-solutions/elysia-sqlite/commit/06267bba60f2a4ba1a61ee6321209d2fecd09b53))
+
 # [1.2.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.7...v1.2.0) (2026-01-10)
 
 
