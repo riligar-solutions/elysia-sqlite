@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { Database } from "bun:sqlite";
-import { join, dirname } from "path";
+import { join, dirname, resolve } from "path";
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { createSessionManager } from './core/session.js';
@@ -27,12 +27,14 @@ const mimeTypes = {
  *   Se não especificado, será salvo no mesmo diretório do banco de dados (recomendado para persistência em ambientes cloud como Fly.io)
  */
 export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
-  const db = new Database(dbPath);
+  // Resolver para caminho absoluto para garantir consistência entre reinicializações
+  const absoluteDbPath = resolve(dbPath);
+  const db = new Database(absoluteDbPath);
   const uiPath = join(import.meta.dir, "ui", "dist");
 
   // Se configPath não for especificado, deriva do diretório do banco de dados
   // Isso garante que a configuração fique no mesmo volume persistente do banco
-  const resolvedConfigPath = configPath || join(dirname(dbPath), "sqlite-admin-config.json");
+  const resolvedConfigPath = configPath ? resolve(configPath) : join(dirname(absoluteDbPath), "sqlite-admin-config.json");
   
   // Gerenciador de Sessão
   const sessionManager = createSessionManager();
