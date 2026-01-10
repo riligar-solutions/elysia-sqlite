@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.5.2...v1.6.0) (2026-01-10)
+
+
+### Features
+
+* Altera rota padrão do painel admin para /sqlite ([43d3b2b](https://github.com/riligar-solutions/elysia-sqlite/commit/43d3b2bec89e3bd6d8b154b1274f997df3982ae0))
+
 ## [1.5.2](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.5.1...v1.5.2) (2026-01-10)
 
 
