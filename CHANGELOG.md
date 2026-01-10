@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.3...v1.1.4) (2026-01-10)
+
+
+### Bug Fixes
+
+* explicit file inclusion to exclude ui node_modules ([c98e7d4](https://github.com/riligar-solutions/elysia-sqlite/commit/c98e7d41f750b3ed065e94e2cbff51a5878893b5))
+
 ## [1.1.3](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.2...v1.1.3) (2026-01-10)
 
 
