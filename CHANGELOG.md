@@ -1,3 +1,10 @@
+## [1.1.5](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.4...v1.1.5) (2026-01-10)
+
+
+### Bug Fixes
+
+* enforce trailing slash redirect for admin root ([73b2674](https://github.com/riligar-solutions/elysia-sqlite/commit/73b2674bb8d932746782f1caa3bcd9b70d7af35a))
+
 ## [1.1.4](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.3...v1.1.4) (2026-01-10)
 
 
