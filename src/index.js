@@ -75,8 +75,7 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
       .onBeforeHandle(({ path, set, session, body }) => {
         // Enforce trailing slash for root to ensure relative assets work
         if (path === prefix) {
-            set.redirect = prefix + '/';
-            return;
+            return Response.redirect(prefix + '/', 301);
         }
 
         // Permitir assets e HTML principal
