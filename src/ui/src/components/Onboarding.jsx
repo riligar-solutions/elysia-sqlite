@@ -80,7 +80,7 @@ export function Onboarding({ onConfigured }) {
             <IconDatabase size={34} />
           </ThemeIcon>
           <Title order={1} fw={700}>
-            Welcome to SQLite Admin
+            Welcome to SQLite
           </Title>
           <Text c="dimmed" size="sm" ta="center">
             Set up your administrator credentials to start managing your database.

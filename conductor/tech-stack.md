@@ -1,4 +1,4 @@
-# Tech Stack - Elysia SQLite Admin
+# Tech Stack - Elysia SQLite
 
 ## Core Technologies
 - **Runtime:** Bun (fast all-in-one JavaScript runtime)

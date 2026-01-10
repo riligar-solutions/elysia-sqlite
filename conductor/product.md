@@ -1,7 +1,7 @@
 # Initial Concept
 Plugin ElysiaJS para gerenciamento de bancos de dados SQLite
 
-# Product Guide - Elysia SQLite Admin
+# Product Guide - Elysia SQLite
 
 ## Vision
 A minimalist, web-based SQLite administration plugin for ElysiaJS applications. It empowers developers, system administrators, and technical stakeholders to manage data and inspect schemas without leaving their browser, following a "Content-First" design philosophy.

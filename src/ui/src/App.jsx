@@ -1010,7 +1010,7 @@ export default function App() {
           <Group gap={4}>
             <IconDatabase stroke={2.5} size={24} color="#37352F" />
             <Text fw={700} size="md" c="#37352F">
-              SQLite Admin
+              SQLite
             </Text>
           </Group>
         </Group>
@@ -1388,7 +1388,7 @@ export default function App() {
               </ThemeIcon>
               <Stack gap={0} mt={4}>
                 <Title order={1} fw={700} fz={40}>
-                  SQLite Admin
+                  SQLite
                 </Title>
                 <Text c="dimmed" size="lg">
                   Manage your local database schema and data.

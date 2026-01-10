@@ -1,4 +1,4 @@
-# 🗃️ SQLite Admin - Demo
+# 🗃️ SQLite - Demo
 
 Demonstração interativa do plugin de gerenciamento SQLite para ElysiaJS.
 

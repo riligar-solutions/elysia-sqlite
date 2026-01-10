@@ -1,4 +1,4 @@
-# Product Guidelines - Elysia SQLite Admin
+# Product Guidelines - Elysia SQLite
 
 ## Tone and Voice
 - **Professional & Efficient:** Communication is direct, clear, and prioritizes speed and task completion.

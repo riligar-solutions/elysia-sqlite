@@ -79,7 +79,7 @@ export function Login({ onLogin }) {
             <IconDatabase size={34} />
           </ThemeIcon>
           <Title order={1} fw={700}>
-            SQLite Admin Login
+            SQLite Login
           </Title>
         </Stack>
 

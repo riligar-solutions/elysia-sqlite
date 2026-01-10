@@ -211,7 +211,7 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
       .post("/api/totp/generate", async ({ session, set }) => {
           if (!session) { set.status = 401; return; }
           const secret = authenticator.generateSecret();
-          const otpauth = authenticator.keyuri(session.username, 'SQLite Admin', secret);
+          const otpauth = authenticator.keyuri(session.username, 'SQLite', secret);
           const qrCode = await QRCode.toDataURL(otpauth);
           return { success: true, secret, qrCode };
       })

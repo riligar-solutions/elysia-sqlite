@@ -1,5 +1,5 @@
 /**
- * Demo - SQLite Admin Plugin
+ * Demo - SQLite Plugin
  * Exemplo completo de uso do plugin de gerenciamento SQLite
  */
 
@@ -142,7 +142,7 @@ const app = new Elysia()
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SQLite Admin - Demo</title>
+        <title>SQLite - Demo</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -245,7 +245,7 @@ const app = new Elysia()
         <div class="container">
           <div class="logo">
             <i class="ti ti-database"></i>
-            <h1>SQLite Admin</h1>
+            <h1>SQLite</h1>
           </div>
           <p class="description">
             Bem-vindo à demonstração do plugin de gerenciamento SQLite para ElysiaJS. 
@@ -278,7 +278,7 @@ const app = new Elysia()
     );
   })
 
-  // Plugin SQLite Admin
+  // Plugin SQLite
   .use(sqliteAdmin({ dbPath: DB_PATH, prefix: "/admin" }))
 
   .listen(3000);
