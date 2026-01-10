@@ -61,6 +61,9 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
 
   return (
     new Elysia({ prefix })
+      .onRequest(({ request }) => {
+          console.log(`[SQLite Admin] Incoming Request: ${request.url}`);
+      })
       // Middleware de Autenticação
       .derive(({ headers }) => {
           const cookies = headers.cookie || '';
