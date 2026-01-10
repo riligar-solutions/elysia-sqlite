@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.2.1...v1.2.2) (2026-01-10)
+
+
+### Bug Fixes
+
+* correctly return Response.redirect for trailing slash enforcement ([4c07678](https://github.com/riligar-solutions/elysia-sqlite/commit/4c0767816a39c1c19cf7a55487a80f631a1e56b9))
+
 ## [1.2.1](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.2.0...v1.2.1) (2026-01-10)
 
 
