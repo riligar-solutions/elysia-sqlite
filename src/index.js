@@ -28,6 +28,7 @@ const mimeTypes = {
 export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-admin-config.json" }) => {
   const db = new Database(dbPath);
   const uiPath = join(import.meta.dir, "ui", "dist");
+  console.log("[SQLite Admin] UI Path:", uiPath);
   
   // Gerenciador de Sessão
   const sessionManager = createSessionManager();
@@ -238,7 +239,14 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
       // Servir index.html na raiz
       .get("/", async () => {
         const file = Bun.file(join(uiPath, "index.html"));
-        return new Response(file, { headers: { "Content-Type": "text/html" } });
+        return new Response(file, {
+          headers: {
+            "Content-Type": "text/html",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+          }
+        });
       })
 
       // Servir arquivos estáticos da pasta assets
@@ -256,6 +264,7 @@ export const sqliteAdmin = ({ dbPath, prefix = "/admin", configPath = "./sqlite-
         return new Response(file, {
           headers: {
             "Content-Type": mimeTypes[ext] || "application/octet-stream",
+            "Cache-Control": "public, max-age=31536000, immutable"
           },
         });
       })
