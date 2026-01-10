@@ -4,6 +4,7 @@
  */
 
 import { Elysia } from "elysia";
+import { rateLimit } from 'elysia-rate-limit';
 import { sqliteAdmin } from "../src/index.js";
 import { Database } from "bun:sqlite";
 import { join } from "path";
@@ -129,6 +130,9 @@ console.log("   📋 Tabelas: clientes, produtos, pedidos, categorias\n");
 // ============================================
 
 const app = new Elysia()
+  .use(rateLimit({
+    exclude: ['/admin', '/admin/*']
+  }))
   // Página inicial com instruções
   .get("/", () => {
     return new Response(
