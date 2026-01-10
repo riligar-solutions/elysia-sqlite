@@ -38,19 +38,19 @@ export function Login({ onLogin }) {
         onLogin();
       } else {
         if (data.code === "2FA_REQUIRED") {
-            setShowTotp(true);
-            notifications.show({
-                title: "Authentication Required",
-                message: "Please enter your 2FA code",
-                color: "blue",
-                icon: <IconDeviceMobile size={16} />
-            });
+          setShowTotp(true);
+          notifications.show({
+            title: "Authentication Required",
+            message: "Please enter your 2FA code",
+            color: "blue",
+            icon: <IconDeviceMobile size={16} />,
+          });
         } else {
-            notifications.show({
+          notifications.show({
             title: "Login Failed",
             message: data.error || "Invalid credentials",
             color: "red",
-            });
+          });
         }
       }
     } catch (error) {
@@ -73,7 +73,7 @@ export function Login({ onLogin }) {
         backgroundColor: "#FBFAF8",
       }}
     >
-      <Container size={420}>
+      <Container size={420} w={"100%"}>
         <Stack align="center" mb="xl">
           <ThemeIcon size={60} radius="md" color="dark">
             <IconDatabase size={34} />
@@ -81,6 +81,9 @@ export function Login({ onLogin }) {
           <Title order={1} fw={700}>
             SQLite Login
           </Title>
+          <Text c="dimmed" size="sm" ta="center">
+            Enter your credentials to log in.
+          </Text>
         </Stack>
 
         <Paper withBorder shadow="md" p={30} radius="md">
@@ -102,42 +105,45 @@ export function Login({ onLogin }) {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={showTotp}
               />
-              
+
               {showTotp && (
-                  <TextInput
-                    label="Authenticator Code (2FA)"
-                    placeholder="000 000"
-                    required
-                    autoFocus
-                    value={totpCode}
-                    onChange={(e) => setTotpCode(e.target.value)}
-                    leftSection={<IconDeviceMobile size={16} />}
-                    maxLength={6}
-                  />
+                <TextInput
+                  label="Authenticator Code (2FA)"
+                  placeholder="000 000"
+                  required
+                  autoFocus
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value)}
+                  leftSection={<IconDeviceMobile size={16} />}
+                  maxLength={6}
+                />
               )}
 
               <Group mt="lg">
-                <Button 
-                    type="submit" 
-                    color="dark" 
-                    fullWidth 
-                    loading={loading}
-                    leftSection={<IconLock size={18} />}
+                <Button
+                  type="submit"
+                  color="dark"
+                  fullWidth
+                  loading={loading}
+                  leftSection={<IconLock size={18} />}
                 >
                   {showTotp ? "Verify & Login" : "Login"}
                 </Button>
               </Group>
-              
+
               {showTotp && (
-                  <Text 
-                    size="xs" 
-                    c="dimmed" 
-                    ta="center" 
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => { setShowTotp(false); setTotpCode(""); }}
-                  >
-                      Cancel
-                  </Text>
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  ta="center"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    setShowTotp(false);
+                    setTotpCode("");
+                  }}
+                >
+                  Cancel
+                </Text>
               )}
             </Stack>
           </form>
