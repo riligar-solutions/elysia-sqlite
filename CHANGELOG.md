@@ -1,3 +1,10 @@
+## [1.1.7](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.6...v1.1.7) (2026-01-10)
+
+
+### Bug Fixes
+
+* add cache-control headers and startup path logging ([e07431c](https://github.com/riligar-solutions/elysia-sqlite/commit/e07431cf229502804714b3bfa7d649ccecd89f53))
+
 ## [1.1.6](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.5...v1.1.6) (2026-01-10)
 
 
