@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.1...v1.1.2) (2026-01-10)
+
+
+### Bug Fixes
+
+* install UI dependencies in prepublishOnly ([20c4ebc](https://github.com/riligar-solutions/elysia-sqlite/commit/20c4ebcbc8c1aef0deeb271404269e522e2dcc00))
+
 ## [1.1.1](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.0...v1.1.1) (2026-01-10)
 
 
