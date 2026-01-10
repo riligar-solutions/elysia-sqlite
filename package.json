@@ -1,6 +1,6 @@
 {
   "name": "@riligar/elysia-sqlite",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Plugin ElysiaJS para gerenciamento de bancos de dados SQLite",
   "type": "module",
   "main": "src/index.js",

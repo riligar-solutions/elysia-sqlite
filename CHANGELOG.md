@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.5.1...v1.5.2) (2026-01-10)
+
+
+### Bug Fixes
+
+* Resolve caminhos para absoluto para persistir configuração entre reinicializações ([8ac7bb2](https://github.com/riligar-solutions/elysia-sqlite/commit/8ac7bb24c1906ca1e60a391f4030d5c816b6638a))
+
 ## [1.5.1](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.5.0...v1.5.1) (2026-01-10)
 
 
