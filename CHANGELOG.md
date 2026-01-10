@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.5...v1.1.6) (2026-01-10)
+
+
+### Bug Fixes
+
+* add debug logging for 404 assets ([55bf218](https://github.com/riligar-solutions/elysia-sqlite/commit/55bf21851a5539aa5696a6d3918beef390fcdbac))
+
 ## [1.1.5](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.4...v1.1.5) (2026-01-10)
 
 
