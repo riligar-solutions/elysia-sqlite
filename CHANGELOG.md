@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.9.0...v1.10.0) (2026-01-10)
+
+
+### Features
+
+* Remove opção de prefixo de rota e define padrão para '/sqlite ([95ebbb3](https://github.com/riligar-solutions/elysia-sqlite/commit/95ebbb37a145d785a26d345a2b395b4b4e708fa7))
+
 # [1.9.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.8.1...v1.9.0) (2026-01-10)
 
 
