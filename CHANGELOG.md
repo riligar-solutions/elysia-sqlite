@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.8.0...v1.8.1) (2026-01-10)
+
+
+### Bug Fixes
+
+* corrige o caminho do arquivo de configuração para usar join() ([6d293df](https://github.com/riligar-solutions/elysia-sqlite/commit/6d293df941b446096bbd355f23cb5cbee5c9956a))
+
 # [1.8.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.7.0...v1.8.0) (2026-01-10)
 
 
