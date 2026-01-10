@@ -40,16 +40,16 @@ const app = new Elysia()
     .use(
         sqliteAdmin({
             dbPath: 'demo.db',
-            prefix: '/admin', // Optional: defaults to /admin
+            prefix: '/database', // Optional: defaults to /database
         })
     )
     .listen(3000)
 
 console.log('🦊 Server running at http://localhost:3000')
-console.log('📊 Admin Dashboard at http://localhost:3000/admin')
+console.log('📊 Admin Dashboard at http://localhost:3000/database')
 ```
 
-On first run, navigate to `/admin` (or your configured prefix) to start the onboarding wizard and configure your admin credentials.
+On first run, navigate to `/database` (or your configured prefix) to start the onboarding wizard and configure your admin credentials.
 
 ## ⚙️ Configuration
 
@@ -60,7 +60,7 @@ These options are passed to the `sqliteAdmin` plugin at initialization.
 | Option       | Type   | Default                       | Description                                                     |
 | ------------ | ------ | ----------------------------- | --------------------------------------------------------------- |
 | `dbPath`     | string | **Required**                  | Path to the SQLite database file                                |
-| `prefix`     | string | `"/admin"`                    | URL prefix for the admin dashboard and API                      |
+| `prefix`     | string | `"/database"`                 | URL prefix for the admin dashboard and API                      |
 | `configPath` | string | Same directory as `dbPath`    | Path to save the runtime authentication config (JSON). Defaults to `sqlite-admin-config.json` in the same directory as your database file |
 
 ### Runtime Configuration (via UI)
@@ -100,7 +100,7 @@ The config file is automatically stored alongside your database, so both will pe
 
 ## 🔌 API Endpoints
 
-The plugin adds the following routes under your configured `prefix` (default `/admin`):
+The plugin adds the following routes under your configured `prefix` (default `/database`):
 
 ### Authentication
 
