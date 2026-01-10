@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.8.1...v1.9.0) (2026-01-10)
+
+
+### Features
+
+* Permite configuração da porta via variável de ambiente e adiciona autenticação ([f299b3a](https://github.com/riligar-solutions/elysia-sqlite/commit/f299b3a09e5cb95f1bb4129626fdf202486885d6))
+
 ## [1.8.1](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.8.0...v1.8.1) (2026-01-10)
 
 
