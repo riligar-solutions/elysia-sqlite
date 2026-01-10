@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.3.0...v1.4.0) (2026-01-10)
+
+
+### Features
+
+* change default prefix to /database ([846c769](https://github.com/riligar-solutions/elysia-sqlite/commit/846c769dd966af04fc45d70e598efd3662a45e48))
+
 # [1.3.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.2.2...v1.3.0) (2026-01-10)
 
 
