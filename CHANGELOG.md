@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.7.0...v1.8.0) (2026-01-10)
+
+
+### Features
+
+* enhance login UI and 2FA handling ([f0ec12f](https://github.com/riligar-solutions/elysia-sqlite/commit/f0ec12fa0d82d04b13d43e58fdd0d5e80727cc27))
+
 # [1.7.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.6.0...v1.7.0) (2026-01-10)
 
 
