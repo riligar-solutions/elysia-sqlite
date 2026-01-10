@@ -1,11 +1,11 @@
 import { Elysia } from "elysia";
 import { Database } from "bun:sqlite";
 import { join, dirname, resolve } from "path";
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
-import { createSessionManager } from './core/session.js';
-import { authenticator } from 'otplib';
-import QRCode from 'qrcode';
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
+import { createSessionManager } from "./core/session.js";
+import { authenticator } from "otplib";
+import QRCode from "qrcode";
 
 // Mapeamento de extensões para MIME types
 const mimeTypes = {
@@ -34,8 +34,10 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
 
   // Se configPath não for especificado, deriva do diretório do banco de dados
   // Isso garante que a configuração fique no mesmo volume persistente do banco
-  const resolvedConfigPath = configPath ? resolve(configPath) : join(dirname(absoluteDbPath), "sqlite-admin-config.json");
-  
+  const resolvedConfigPath = configPath
+    ? resolve(configPath)
+    : join(dirname(absoluteDbPath), "sqlite-config.json");
+
   // Gerenciador de Sessão
   const sessionManager = createSessionManager();
 
@@ -44,7 +46,7 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
   const loadConfig = () => {
     if (existsSync(resolvedConfigPath)) {
       try {
-        config = JSON.parse(readFileSync(resolvedConfigPath, 'utf-8'));
+        config = JSON.parse(readFileSync(resolvedConfigPath, "utf-8"));
       } catch (e) {
         console.error("Failed to load config", e);
       }
@@ -53,14 +55,14 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
   loadConfig();
 
   const saveConfig = async (newConfig) => {
-      config = { ...config, ...newConfig };
-      try {
-          await writeFile(resolvedConfigPath, JSON.stringify(config, null, 2));
-          return true;
-      } catch (e) {
-          console.error("Failed to save config", e);
-          return false;
-      }
+    config = { ...config, ...newConfig };
+    try {
+      await writeFile(resolvedConfigPath, JSON.stringify(config, null, 2));
+      return true;
+    } catch (e) {
+      console.error("Failed to save config", e);
+      return false;
+    }
   };
 
   const isConfigured = () => !!(config.username && config.password);
@@ -69,190 +71,220 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
     new Elysia({ prefix })
       // Middleware de Autenticação
       .derive(({ headers }) => {
-          const cookies = headers.cookie || '';
-          const sessionMatch = cookies.match(/admin-session=([^;]+)/);
-          const token = sessionMatch ? sessionMatch[1] : null;
-          const session = sessionManager.get(token);
-          return { session };
+        const cookies = headers.cookie || "";
+        const sessionMatch = cookies.match(/admin-session=([^;]+)/);
+        const token = sessionMatch ? sessionMatch[1] : null;
+        const session = sessionManager.get(token);
+        return { session };
       })
       .onBeforeHandle(({ path, set, session, body }) => {
         // Enforce trailing slash for root to ensure relative assets work
         if (path === prefix) {
-            return Response.redirect(prefix + '/', 301);
+          return Response.redirect(prefix + "/", 301);
         }
 
         // Permitir assets e HTML principal
-        if (path.includes('/assets/') || path === prefix + '/') return;
-        if (path.endsWith('index.html')) return;
+        if (path.includes("/assets/") || path === prefix + "/") return;
+        if (path.endsWith("index.html")) return;
 
         // Rotas Públicas de API
-        if (path.endsWith('/auth/login') || path.endsWith('/auth/status') || path.endsWith('/auth/logout')) return;
-        
+        if (
+          path.endsWith("/auth/login") ||
+          path.endsWith("/auth/status") ||
+          path.endsWith("/auth/logout")
+        )
+          return;
+
         // Rota de Setup (só permitida se não configurado)
-        if (path.endsWith('/api/setup')) {
-            if (isConfigured()) {
-                set.status = 403;
-                return { success: false, error: "System already configured" };
-            }
-            return;
+        if (path.endsWith("/api/setup")) {
+          if (isConfigured()) {
+            set.status = 403;
+            return { success: false, error: "System already configured" };
+          }
+          return;
         }
 
         // Para todas as outras rotas /api/, exigir configuração e autenticação
-        if (path.includes('/api/')) {
-            if (!isConfigured()) {
-                set.status = 403;
-                return { success: false, error: "System not configured", code: "NOT_CONFIGURED" };
-            }
+        if (path.includes("/api/")) {
+          if (!isConfigured()) {
+            set.status = 403;
+            return {
+              success: false,
+              error: "System not configured",
+              code: "NOT_CONFIGURED",
+            };
+          }
 
-            if (!session) {
-                set.status = 401;
-                return { success: false, error: "Unauthorized", code: "UNAUTHORIZED" };
-            }
+          if (!session) {
+            set.status = 401;
+            return {
+              success: false,
+              error: "Unauthorized",
+              code: "UNAUTHORIZED",
+            };
+          }
         }
       })
 
       // AUTH: Status
       .get("/auth/status", ({ session }) => {
-          return {
-              configured: isConfigured(),
-              authenticated: !!session,
-              user: session?.username,
-              totpEnabled: !!config.totpSecret
-          };
+        return {
+          configured: isConfigured(),
+          authenticated: !!session,
+          user: session?.username,
+          totpEnabled: !!config.totpSecret,
+        };
       })
 
       // AUTH: Setup (Onboarding)
       .post("/api/setup", async ({ body }) => {
-          if (isConfigured()) {
-              return { success: false, error: "Already configured" };
-          }
-          const { username, password } = body;
-          if (!username || !password) {
-              return { success: false, error: "Username and password required" };
-          }
-          
-          if (await saveConfig({ username, password })) {
-              // Criar sessão automaticamente
-              const { token, expiresAt } = sessionManager.create(username);
-              const expiresDate = new Date(expiresAt);
-              
-              return new Response(JSON.stringify({ success: true }), {
-                  headers: {
-                      'Content-Type': 'application/json',
-                      'Set-Cookie': `admin-session=${token}; Path=${prefix}; HttpOnly; SameSite=Lax; Expires=${expiresDate.toUTCString()}`
-                  }
-              });
-          }
-          return { success: false, error: "Failed to save config" };
+        if (isConfigured()) {
+          return { success: false, error: "Already configured" };
+        }
+        const { username, password } = body;
+        if (!username || !password) {
+          return { success: false, error: "Username and password required" };
+        }
+
+        if (await saveConfig({ username, password })) {
+          // Criar sessão automaticamente
+          const { token, expiresAt } = sessionManager.create(username);
+          const expiresDate = new Date(expiresAt);
+
+          return new Response(JSON.stringify({ success: true }), {
+            headers: {
+              "Content-Type": "application/json",
+              "Set-Cookie": `admin-session=${token}; Path=${prefix}; HttpOnly; SameSite=Lax; Expires=${expiresDate.toUTCString()}`,
+            },
+          });
+        }
+        return { success: false, error: "Failed to save config" };
       })
 
       // AUTH: Login
       .post("/auth/login", ({ body, set }) => {
-          if (!isConfigured()) {
-              set.status = 403;
-              return { success: false, error: "Not configured" };
-          }
-          
-          const { username, password, totpCode } = body;
-          
-          if (username === config.username && password === config.password) {
-              // 2FA Verification
-              if (config.totpSecret) {
-                  if (!totpCode) {
-                      set.status = 401; // Require 2FA
-                      return { success: false, error: "2FA code required", code: "2FA_REQUIRED" };
-                  }
-                  
-                  const isValid = authenticator.check(totpCode, config.totpSecret);
-                  if (!isValid) {
-                      set.status = 401;
-                      return { success: false, error: "Invalid 2FA code" };
-                  }
-              }
+        if (!isConfigured()) {
+          set.status = 403;
+          return { success: false, error: "Not configured" };
+        }
 
-              const { token, expiresAt } = sessionManager.create(username);
-              const expiresDate = new Date(expiresAt);
-              
-              return new Response(JSON.stringify({ success: true }), {
-                  headers: {
-                      'Content-Type': 'application/json',
-                      'Set-Cookie': `admin-session=${token}; Path=${prefix}; HttpOnly; SameSite=Lax; Expires=${expiresDate.toUTCString()}`
-                  }
-              });
+        const { username, password, totpCode } = body;
+
+        if (username === config.username && password === config.password) {
+          // 2FA Verification
+          if (config.totpSecret) {
+            if (!totpCode) {
+              set.status = 401; // Require 2FA
+              return {
+                success: false,
+                error: "2FA code required",
+                code: "2FA_REQUIRED",
+              };
+            }
+
+            const isValid = authenticator.check(totpCode, config.totpSecret);
+            if (!isValid) {
+              set.status = 401;
+              return { success: false, error: "Invalid 2FA code" };
+            }
           }
-          
-          set.status = 401;
-          return { success: false, error: "Invalid credentials" };
+
+          const { token, expiresAt } = sessionManager.create(username);
+          const expiresDate = new Date(expiresAt);
+
+          return new Response(JSON.stringify({ success: true }), {
+            headers: {
+              "Content-Type": "application/json",
+              "Set-Cookie": `admin-session=${token}; Path=${prefix}; HttpOnly; SameSite=Lax; Expires=${expiresDate.toUTCString()}`,
+            },
+          });
+        }
+
+        set.status = 401;
+        return { success: false, error: "Invalid credentials" };
       })
 
       // AUTH: Logout
       .post("/auth/logout", ({ session }) => {
-           return new Response(JSON.stringify({ success: true }), {
-                  headers: {
-                      'Content-Type': 'application/json',
-                      'Set-Cookie': `admin-session=; Path=${prefix}; HttpOnly; SameSite=Lax; Max-Age=0`
-                  }
-              });
+        return new Response(JSON.stringify({ success: true }), {
+          headers: {
+            "Content-Type": "application/json",
+            "Set-Cookie": `admin-session=; Path=${prefix}; HttpOnly; SameSite=Lax; Max-Age=0`,
+          },
+        });
       })
 
       // DEBUG: List files in UI path
       .get("/api/debug/files", () => {
         try {
-            const files = readdirSync(uiPath);
-            const assetsPath = join(uiPath, 'assets');
-            const assets = existsSync(assetsPath) 
-                ? readdirSync(assetsPath) 
-                : 'Assets folder missing';
-            return { uiPath, files, assets };
+          const files = readdirSync(uiPath);
+          const assetsPath = join(uiPath, "assets");
+          const assets = existsSync(assetsPath)
+            ? readdirSync(assetsPath)
+            : "Assets folder missing";
+          return { uiPath, files, assets };
         } catch (e) {
-            return { error: e.message, stack: e.stack, uiPath };
+          return { error: e.message, stack: e.stack, uiPath };
         }
       })
 
       // TOTP: Generate
       .post("/api/totp/generate", async ({ session, set }) => {
-          if (!session) { set.status = 401; return; }
-          const secret = authenticator.generateSecret();
-          const otpauth = authenticator.keyuri(session.username, 'SQLite', secret);
-          const qrCode = await QRCode.toDataURL(otpauth);
-          return { success: true, secret, qrCode };
+        if (!session) {
+          set.status = 401;
+          return;
+        }
+        const secret = authenticator.generateSecret();
+        const otpauth = authenticator.keyuri(
+          session.username,
+          "SQLite",
+          secret
+        );
+        const qrCode = await QRCode.toDataURL(otpauth);
+        return { success: true, secret, qrCode };
       })
 
       // TOTP: Verify & Enable
       .post("/api/totp/verify", async ({ body, session, set }) => {
-          if (!session) { set.status = 401; return; }
-          const { secret, code } = body;
-          
-          if (!authenticator.check(code, secret)) {
-              return { success: false, error: "Invalid code" };
-          }
+        if (!session) {
+          set.status = 401;
+          return;
+        }
+        const { secret, code } = body;
 
-          if (await saveConfig({ totpSecret: secret })) {
-              return { success: true };
-          }
-          return { success: false, error: "Failed to save config" };
+        if (!authenticator.check(code, secret)) {
+          return { success: false, error: "Invalid code" };
+        }
+
+        if (await saveConfig({ totpSecret: secret })) {
+          return { success: true };
+        }
+        return { success: false, error: "Failed to save config" };
       })
 
       // TOTP: Disable
       .post("/api/totp/disable", async ({ body, session, set }) => {
-          if (!session) { set.status = 401; return; }
-          const { code } = body; // Confirm with code before disabling
-          
-          if (!authenticator.check(code, config.totpSecret)) {
-             return { success: false, error: "Invalid code" };
-          }
+        if (!session) {
+          set.status = 401;
+          return;
+        }
+        const { code } = body; // Confirm with code before disabling
 
-          // Remove secret
-          const newConfig = { ...config };
-          delete newConfig.totpSecret;
-          config = newConfig; // Local update
-          
-          try {
-              await writeFile(resolvedConfigPath, JSON.stringify(config, null, 2));
-              return { success: true };
-          } catch(e) {
-              return { success: false, error: "Failed to save" };
-          }
+        if (!authenticator.check(code, config.totpSecret)) {
+          return { success: false, error: "Invalid code" };
+        }
+
+        // Remove secret
+        const newConfig = { ...config };
+        delete newConfig.totpSecret;
+        config = newConfig; // Local update
+
+        try {
+          await writeFile(resolvedConfigPath, JSON.stringify(config, null, 2));
+          return { success: true };
+        } catch (e) {
+          return { success: false, error: "Failed to save" };
+        }
       })
 
       // Servir index.html na raiz
@@ -262,9 +294,9 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
           headers: {
             "Content-Type": "text/html",
             "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0"
-          }
+            Pragma: "no-cache",
+            Expires: "0",
+          },
         });
       })
 
@@ -273,16 +305,16 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
         const filePath = join(uiPath, "assets", params["*"]);
         const file = Bun.file(filePath);
         const exists = await file.exists();
-        
+
         if (!exists) {
-            return new Response("Not found", { status: 404 });
+          return new Response("Not found", { status: 404 });
         }
-            
+
         const ext = filePath.substring(filePath.lastIndexOf("."));
         return new Response(file, {
           headers: {
             "Content-Type": mimeTypes[ext] || "application/octet-stream",
-            "Cache-Control": "public, max-age=31536000, immutable"
+            "Cache-Control": "public, max-age=31536000, immutable",
           },
         });
       })
@@ -307,11 +339,17 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
           const page = parseInt(query.page) || 1;
           const limit = parseInt(query.limit) || 50;
           const offset = (page - 1) * limit;
-          
-          const rows = db.query(`SELECT * FROM ${params.name} LIMIT ${limit} OFFSET ${offset}`).all();
-          const countResult = db.query(`SELECT COUNT(*) as count FROM ${params.name}`).get();
+
+          const rows = db
+            .query(
+              `SELECT * FROM ${params.name} LIMIT ${limit} OFFSET ${offset}`
+            )
+            .all();
+          const countResult = db
+            .query(`SELECT COUNT(*) as count FROM ${params.name}`)
+            .get();
           const total = countResult.count;
-          
+
           return {
             success: true,
             rows,
@@ -319,8 +357,8 @@ export const sqliteAdmin = ({ dbPath, prefix = "/sqlite", configPath }) => {
               page,
               limit,
               total,
-              totalPages: Math.ceil(total / limit)
-            }
+              totalPages: Math.ceil(total / limit),
+            },
           };
         } catch (error) {
           return { success: false, error: error.message };

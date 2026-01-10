@@ -83,7 +83,8 @@ export function Onboarding({ onConfigured }) {
             Welcome to SQLite
           </Title>
           <Text c="dimmed" size="sm" ta="center">
-            Set up your administrator credentials to start managing your database.
+            Set up your administrator credentials to start managing your
+            database.
           </Text>
         </Stack>
 
@@ -105,12 +106,12 @@ export function Onboarding({ onConfigured }) {
                 onChange={(e) => setPassword(e.target.value)}
               />
               <Group mt="lg" justify="flex-end">
-                <Button 
-                    type="submit" 
-                    color="dark" 
-                    fullWidth 
-                    loading={loading}
-                    leftSection={<IconShieldLock size={18} />}
+                <Button
+                  type="submit"
+                  color="dark"
+                  fullWidth
+                  loading={loading}
+                  leftSection={<IconShieldLock size={18} />}
                 >
                   Save and Start
                 </Button>
@@ -119,7 +120,7 @@ export function Onboarding({ onConfigured }) {
           </form>
         </Paper>
         <Text c="dimmed" size="xs" ta="center" mt="xl">
-            This configuration will be saved in sqlite-admin-config.json
+          This configuration will be saved in sqlite-config.json
         </Text>
       </Container>
     </Box>
