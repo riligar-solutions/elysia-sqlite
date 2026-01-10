@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.7...v1.2.0) (2026-01-10)
+
+
+### Features
+
+* add debug route to inspect ui files ([b3e51f8](https://github.com/riligar-solutions/elysia-sqlite/commit/b3e51f8f309c745c12005673bdbcc21e9c2fb68e))
+
 ## [1.1.7](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.1.6...v1.1.7) (2026-01-10)
 
 
