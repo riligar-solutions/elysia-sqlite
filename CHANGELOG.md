@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.10.0...v1.11.0) (2026-03-05)
+
+
+### Features
+
+* Implement database download functionality with a new API endpoint and UI option. ([05c9a0b](https://github.com/riligar-solutions/elysia-sqlite/commit/05c9a0b75ba136834a685214c742b1b4f588c7fd))
+
 # [1.10.0](https://github.com/riligar-solutions/elysia-sqlite/compare/v1.9.0...v1.10.0) (2026-01-10)
 
 
