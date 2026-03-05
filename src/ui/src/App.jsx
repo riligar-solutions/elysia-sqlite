@@ -152,7 +152,7 @@ const NewRecordModal = ({
 
     try {
       const res = await fetch(
-        `${API}/table/${currentTable}/fk-options?refTable=${col.fk.table}&refColumn=${col.fk.column}`
+        `${API}/table/${currentTable}/fk-options?refTable=${col.fk.table}&refColumn=${col.fk.column}`,
       );
       const data = await res.json();
 
@@ -460,11 +460,11 @@ export default function App() {
   ];
 
   const filteredTables = tables.filter((t) =>
-    t.name.toLowerCase().includes(commandQuery.toLowerCase())
+    t.name.toLowerCase().includes(commandQuery.toLowerCase()),
   );
 
   const filteredActions = commandActions.filter((a) =>
-    a.label.toLowerCase().includes(commandQuery.toLowerCase())
+    a.label.toLowerCase().includes(commandQuery.toLowerCase()),
   );
 
   // Combined items for keyboard navigation
@@ -541,7 +541,7 @@ export default function App() {
             } catch {
               return { name, count: "?" };
             }
-          })
+          }),
         );
         setTables(tablesWithCount);
       }
@@ -604,7 +604,7 @@ export default function App() {
 
     if (searchQuery) {
       const textCols = columns.filter((c) =>
-        c.type?.toUpperCase().includes("TEXT")
+        c.type?.toUpperCase().includes("TEXT"),
       );
       if (textCols.length > 0) {
         const searchConds = textCols
@@ -694,7 +694,7 @@ export default function App() {
         if (data.rows) {
           setRows(data.rows);
           setColumns(
-            data.columns?.map((c) => ({ name: c, type: "TEXT" })) || []
+            data.columns?.map((c) => ({ name: c, type: "TEXT" })) || [],
           );
           setTotal(data.rows.length);
         } else {
@@ -797,7 +797,7 @@ export default function App() {
         ...exportRows.map((r) =>
           cols
             .map((c) => `"${String(r[c] || "").replace(/"/g, '""')}"`)
-            .join(",")
+            .join(","),
         ),
       ].join("\n");
       downloadFile(`${currentTable}.csv`, csv, "text/csv");
@@ -805,7 +805,7 @@ export default function App() {
       downloadFile(
         `${currentTable}.json`,
         JSON.stringify(exportRows, null, 2),
-        "application/json"
+        "application/json",
       );
     }
 
@@ -861,6 +861,23 @@ export default function App() {
     setAiLoading(false);
   };
 
+  // Download the DB file
+  const downloadDb = async () => {
+    try {
+      const dbUrl = `${API}/db/download`;
+      const a = document.createElement("a");
+      a.href = dbUrl;
+      // Triggers standard browser download
+      a.click();
+    } catch (err) {
+      notifications.show({
+        title: "Erro",
+        message: "Erro ao baixar banco de dados",
+        color: "red",
+      });
+    }
+  };
+
   // Inline edit - update cell
   const updateCell = async (rowPk, column, newValue) => {
     const pkCol = columns.find((c) => c.pk === 1)?.name || columns[0]?.name;
@@ -884,8 +901,8 @@ export default function App() {
           prevRows.map((r) =>
             String(r[pkCol]) === String(rowPk)
               ? { ...r, [column]: newValue }
-              : r
-          )
+              : r,
+          ),
         );
         notifications.show({
           title: "Salvo",
@@ -984,7 +1001,7 @@ export default function App() {
       const values = new Set(
         rows
           .map((r) => r[col.name])
-          .filter((v) => v !== null && v !== undefined)
+          .filter((v) => v !== null && v !== undefined),
       );
       // Limit to 20 options to keep UI clean
       options[col.name] = Array.from(values).map(String).slice(0, 20);
@@ -1070,6 +1087,12 @@ export default function App() {
             label="ER Diagram"
             leftSection={<IconSitemap size={16} />}
             onClick={() => loadErd()}
+            style={{ borderRadius: 6 }}
+          />
+          <NavLink
+            label="Download .sqlite/.db"
+            leftSection={<IconDownload size={16} />}
+            onClick={() => downloadDb()}
             style={{ borderRadius: 6 }}
           />
         </Stack>
@@ -1660,9 +1683,9 @@ export default function App() {
                               r[
                                 columns.find((c) => c.pk === 1)?.name ||
                                   columns[0]?.name
-                              ]
-                            )
-                          )
+                              ],
+                            ),
+                          ),
                         )
                       : rows
                   }
@@ -1732,9 +1755,9 @@ export default function App() {
                               r[
                                 columns.find((c) => c.pk === 1)?.name ||
                                   columns[0]?.name
-                              ]
-                            )
-                          )
+                              ],
+                            ),
+                          ),
                         )}
                         columns={columns}
                         filename={`${currentTable}_selected`}
@@ -1776,7 +1799,7 @@ export default function App() {
                     onSelectAll={(checked) => {
                       if (checked) {
                         setSelectedRows(
-                          new Set(rows.map((r) => String(r[pk])))
+                          new Set(rows.map((r) => String(r[pk]))),
                         );
                       } else {
                         setSelectedRows(new Set());

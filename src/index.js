@@ -238,7 +238,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
         const otpauth = authenticator.keyuri(
           session.username,
           "SQLite",
-          secret
+          secret,
         );
         const qrCode = await QRCode.toDataURL(otpauth);
         return { success: true, secret, qrCode };
@@ -327,7 +327,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
         SELECT name FROM sqlite_master 
         WHERE type='table' AND name NOT LIKE 'sqlite_%'
         ORDER BY name
-      `
+      `,
           )
           .all();
         return { tables: tables.map((t) => t.name) };
@@ -342,7 +342,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
 
           const rows = db
             .query(
-              `SELECT * FROM ${params.name} LIMIT ${limit} OFFSET ${offset}`
+              `SELECT * FROM ${params.name} LIMIT ${limit} OFFSET ${offset}`,
             )
             .all();
           const countResult = db
@@ -406,7 +406,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
           const placeholders = columns.map(() => "?").join(", ");
           const values = Object.values(body);
           const sql = `INSERT INTO ${params.name} (${columns.join(
-            ", "
+            ", ",
           )}) VALUES (${placeholders})`;
           const result = db.run(sql, values);
           return { success: true, id: result.lastInsertRowid };
@@ -481,7 +481,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
           const displayCol =
             tableInfo.find(
               (c) =>
-                c.type?.toUpperCase().includes("TEXT") && c.name !== refColumn
+                c.type?.toUpperCase().includes("TEXT") && c.name !== refColumn,
             )?.name || refColumn;
 
           const sql = `SELECT ${refColumn} as value, ${displayCol} as label FROM ${refTable} ORDER BY ${displayCol}`;
@@ -512,7 +512,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
           const displayCol =
             tableInfo.find(
               (c) =>
-                c.type?.toUpperCase().includes("TEXT") && c.name !== idColumn
+                c.type?.toUpperCase().includes("TEXT") && c.name !== idColumn,
             )?.name || idColumn;
 
           const placeholders = ids.map(() => "?").join(",");
@@ -551,7 +551,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
           // Get database schema context
           const tables = db
             .query(
-              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
             )
             .all();
           let schemaContext = "";
@@ -584,7 +584,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
                   },
                 ],
               }),
-            }
+            },
           );
 
           const data = await response.json();
@@ -604,7 +604,7 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
         try {
           const tables = db
             .query(
-              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+              "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
             )
             .all();
           const schema = tables.map((t) => {
@@ -623,6 +623,29 @@ export const sqliteAdmin = ({ dbPath, configPath }) => {
           return { success: true, schema };
         } catch (error) {
           return { success: false, error: error.message };
+        }
+      })
+
+      // Download database file
+      .get("/api/db/download", () => {
+        try {
+          const file = Bun.file(absoluteDbPath);
+          const filename =
+            absoluteDbPath.split(/[/\\]/).pop() || "database.sqlite";
+          return new Response(file, {
+            headers: {
+              "Content-Type": "application/octet-stream",
+              "Content-Disposition": `attachment; filename="${filename}"`,
+            },
+          });
+        } catch (error) {
+          return new Response(
+            JSON.stringify({ success: false, error: error.message }),
+            {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         }
       })
   );

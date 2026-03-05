@@ -132,8 +132,9 @@ console.log("   📋 Tabelas: clientes, produtos, pedidos, categorias\n");
 const app = new Elysia()
   .use(
     rateLimit({
-      exclude: ["/sqlite", "/sqlite/*"],
-    })
+      exclude: ["/sqlite", "/sqlite/api/db/download", "/sqlite/*"],
+      skip: ({ url }) => url.includes("/api/db/download"),
+    }),
   )
   // Página inicial com instruções
   .get("/", () => {
@@ -276,7 +277,7 @@ const app = new Elysia()
       </body>
       </html>
     `,
-      { headers: { "Content-Type": "text/html" } }
+      { headers: { "Content-Type": "text/html" } },
     );
   })
 
@@ -292,5 +293,5 @@ console.log("💡 Dica: Experimente consultas SQL como:");
 console.log("   SELECT * FROM clientes");
 console.log("   SELECT * FROM produtos WHERE preco > 5000");
 console.log(
-  "   SELECT c.nome, pe.total FROM pedidos pe JOIN clientes c ON pe.cliente_id = c.id\n"
+  "   SELECT c.nome, pe.total FROM pedidos pe JOIN clientes c ON pe.cliente_id = c.id\n",
 );

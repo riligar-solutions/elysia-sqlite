@@ -8,6 +8,8 @@
     "dev": "bun run --watch index.js"
   },
   "dependencies": {
-    "elysia": "^1.2.25"
+    "@sinclair/typebox": "^0.34.48",
+    "elysia": "^1.2.25",
+    "elysia-rate-limit": "^4.5.0"
   }
 }
